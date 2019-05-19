@@ -19,6 +19,8 @@ gnatinspect.db-*
 *-loc.xml
 *.ali
 .gdb_history
+*.stderr
+*.stdout
 
 # IDEA junk
 .idea

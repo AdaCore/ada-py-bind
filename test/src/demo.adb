@@ -6,6 +6,6 @@ package body Demo is
 
    procedure Initialize_Module is
    begin
-       Pet_Module.Initialize_Module;
+      Pet_Module.Initialize_Module;
    end Initialize_Module;
 end Demo;

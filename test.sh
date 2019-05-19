@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Building libraries"
 gprclean -r -P test/test.gpr -XLIBRARY_TYPE=relocatable
-gprbuild -v -p -P test/test.gpr -XLIBRARY_TYPE=relocatable
+gprbuild -p -P test/test.gpr -XLIBRARY_TYPE=relocatable
 
 echo "Basename of the library should be the module name"
 cp test/lib/libtest.so test/lib/test.so

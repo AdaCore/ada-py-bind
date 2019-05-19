@@ -2,6 +2,9 @@ with "gnatcoll_python";
 with "gnatcoll";
 
 library project Ada_Py_Bind is
+   type Build_Mode_Type is ("dev", "prod");
+   Build_Mode : Build_Mode_Type := external ("BUILD_MODE", "dev");
+
    for Create_Missing_Dirs use "True";
 
    type BUILD_KIND is ("static", "static-pic", "relocatable");
@@ -28,6 +31,17 @@ library project Ada_Py_Bind is
    for Object_Dir use "obj";
 
    package Compiler is
-      for Default_Switches ("Ada") use ("-O0", "-g");
+      case Build_Mode is
+         when "dev" =>
+            for Default_Switches ("Ada") use ("-g", "-O0", "-gnatyg",
+                                              "-gnatwae");
+
+         when "prod" =>
+            --  Debug information is useful even with optimization for
+            --  profiling, for instance.
+            for Default_Switches ("Ada") use ("-g", "-Ofast", "-gnatp");
+      end case;
    end Compiler;
+
+
 end Ada_Py_Bind;

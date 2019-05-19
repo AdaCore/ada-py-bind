@@ -3,6 +3,7 @@ with Interfaces.C.Strings;
 with Interfaces.C;
 
 package body Py_Bind.Py_Value is
+   procedure Init;
 
    function To_Python (Self : Rec_Access; Owns_Ptr : Boolean := True) return T;
 
@@ -97,7 +98,7 @@ package body Py_Bind.Py_Value is
 
       return T'(Refcount.Refcounted
                 with Py_Data   => Obj,
-                Owns_Data => True);
+                Owns_Data      => Owns_Ptr);
    end To_Python;
 
    ------------
