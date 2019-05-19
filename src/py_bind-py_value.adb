@@ -87,6 +87,13 @@ package body Py_Bind.Py_Value is
             & Get_Refcount (Obj)'Image);
       end if;
 
+      --  Set Self as __userdata field on the PyObject
+      declare
+         S : PyObject with Import;
+         for S'Address use Self'Address;
+      begin
+         PyObject_SetAttrString (Obj, "__userdata", S);
+      end;
 
       return T'(Refcount.Refcounted
                 with Py_Data   => Obj,
