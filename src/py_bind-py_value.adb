@@ -128,7 +128,6 @@ package body Py_Bind.Py_Value is
 
       Dict    : constant PyDictObject := PyDict_New;
       Ignored : Integer;
-      Bases   : PyObject := null;
       S       : chars_ptr;
    begin
       PyDict_SetItemString
@@ -137,7 +136,7 @@ package body Py_Bind.Py_Value is
 
       Class := Type_New
         (Name  => Name,
-         Bases => Bases,
+         Bases => null,
          Dict  => Dict);
       if Class = null then
          PyErr_Print;
