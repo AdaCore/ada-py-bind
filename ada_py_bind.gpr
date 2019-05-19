@@ -1,0 +1,33 @@
+with "gnatcoll_python";
+with "gnatcoll";
+
+library project Ada_Py_Bind is
+   for Create_Missing_Dirs use "True";
+
+   type BUILD_KIND is ("static", "static-pic", "relocatable");
+   BUILD : BUILD_KIND := external("LIBRARY_TYPE", "static");
+
+   case BUILD is
+      when "relocatable" =>
+         for Source_Dirs use ("../../include/gnatcoll_python/");
+         for Library_Dir use "../../lib/gnatcoll_python.relocatable";
+         for Library_Kind use "relocatable";
+      when "static-pic" =>
+         for Source_Dirs use ("../../include/gnatcoll_python/");
+         for Library_Dir use "../../lib/gnatcoll_python.static-pic";
+         for Library_Kind use "static-pic";
+      when "static" =>
+         for Source_Dirs use ("../../include/gnatcoll_python/");
+         for Library_Dir use "../../lib/gnatcoll_python.static";
+         for Library_Kind use "static";
+   end case;
+
+   for Library_Name use "ada_py_bind";
+   for Library_Dir use "lib";
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj";
+
+   package Compiler is
+      for Default_Switches ("Ada") use ("-O0", "-g");
+   end Compiler;
+end Ada_Py_Bind;

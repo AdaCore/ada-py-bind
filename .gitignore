@@ -1,0 +1,27 @@
+# Python junk
+*.pyc
+__pycache__
+
+# Vim junk
+*.swp
+*.swo
+.*.swp
+.*.swo
+
+# Build/test temporaries
+*.o
+valgrind.out
+
+# GNAT/GPS/GDB junk
+auto.cgpr
+gnatinspect.db
+gnatinspect.db-*
+*-loc.xml
+*.ali
+.gdb_history
+
+# IDEA junk
+.idea
+
+# Custom grab bag dir
+/misc
