@@ -49,4 +49,7 @@ package Py_Bind is
 
    No_Module_Descriptor : Module_Descriptor :=
      (Init_Fn_Vectors.Empty_Vector, Py_None);
+
+   function Image (Obj : PyObject) return String;
+   --  Utility function to print a PyObject
 end Py_Bind;

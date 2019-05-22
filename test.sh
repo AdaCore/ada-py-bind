@@ -12,4 +12,4 @@ echo "Run python example"
 echo
 
 export PYTHONPATH=$PWD/test/lib
-python -c "import test; print test; p = test.Pet(); print p"
+ipython -i -c "import test; print test; p = test.Shape(); print p"

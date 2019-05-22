@@ -1,8 +1,9 @@
 with Py_Bind.Py_Type_Descriptor;
+with Py_Bind.Py_Module;
 
 generic
    type Rec is private;
-   Module : in out Module_Descriptor;
+   with package Module is new Py_Bind.Py_Module (<>);
    Name : String;
    with procedure Destroy (Self : in out Rec) is null;
 package Py_Bind.Py_Value is

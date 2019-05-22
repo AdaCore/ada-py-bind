@@ -26,4 +26,16 @@ package body Py_Bind is
       end if;
    end Destroy;
 
+   -----------
+   -- Image --
+   -----------
+
+   function Image (Obj : PyObject) return String is
+      Py_Repr : constant PyObject := PyObject_Repr (Obj);
+   begin
+      return S : constant String := PyString_AsString (Py_Repr) do
+         Py_DECREF (Py_Repr);
+      end return;
+   end Image;
+
 end Py_Bind;

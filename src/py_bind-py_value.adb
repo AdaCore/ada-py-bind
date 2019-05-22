@@ -1,11 +1,17 @@
 with Ada.Unchecked_Deallocation;
 with Interfaces.C.Strings;
 with Interfaces.C;
+with System;
 
 package body Py_Bind.Py_Value is
+
    procedure Init;
+   procedure Set_UD (Self : Rec_Access; Obj : PyObject);
 
    function To_Python (Self : Rec_Access; Owns_Ptr : Boolean := True) return T;
+
+   function Default_Constructor
+     (Data : PyObject; Args : PyObject) return PyObject with Convention => C;
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Rec,
@@ -14,6 +20,20 @@ package body Py_Bind.Py_Value is
    Class   : PyObject;
 
    function Py_Type return PyObject is (Class);
+
+   ------------
+   -- Set_UD --
+   ------------
+
+   procedure Set_UD (Self : Rec_Access; Obj : PyObject) is
+      S : constant PyObject := PyCObject_FromVoidPtr (Self.all'Address);
+   begin
+      PyObject_SetAttrString (Obj, "__userdata", S);
+   end Set_UD;
+
+   ----------
+   -- Free --
+   ----------
 
    overriding procedure Free (Self : in out T) is
    begin
@@ -28,15 +48,27 @@ package body Py_Bind.Py_Value is
       Destroy (Self);
    end Free;
 
+   ---------------
+   -- To_Python --
+   ---------------
+
    function To_Python (Self : Rec_Access) return T is
    begin
       return To_Python (Self, False);
    end To_Python;
 
+   ---------------
+   -- To_Python --
+   ---------------
+
    function To_Python (Self : Rec) return T is
    begin
       return To_Python (new Rec'(Self), True);
    end To_Python;
+
+   ---------------
+   -- To_Python --
+   ---------------
 
    function To_Python (Self : Rec_Access; Owns_Ptr : Boolean := True) return T
    is
@@ -80,21 +112,8 @@ package body Py_Bind.Py_Value is
       --  The PyObject should have a single reference in the end, owned by
       --  the class instance itself.
 
-      if Active (Me) then
-         Assert
-           (Me,
-            Get_Refcount (Obj) = 1,
-            "New_Instance should own a single refcount of PyObject, got "
-            & Get_Refcount (Obj)'Image);
-      end if;
-
-      --  Set Self as __userdata field on the PyObject
-      declare
-         S : PyObject with Import;
-         for S'Address use Self'Address;
-      begin
-         PyObject_SetAttrString (Obj, "__userdata", S);
-      end;
+      --  Set Self as user data on python object
+      Set_UD (Self, Obj);
 
       return T'(Refcount.Refcounted
                 with Py_Data   => Obj,
@@ -106,19 +125,20 @@ package body Py_Bind.Py_Value is
    ------------
 
    function To_Ada (Self : PyObject) return Rec_Access is
-      use Interfaces.C.Strings;
-      UD_Accessor : chars_ptr := New_String ("__userdata");
-      UD          : PyObject :=
-        PyObject_GetAttrString (Self, UD_Accessor);
+      UD          : PyObject;
    begin
-      Free (UD_Accessor);
-
-      declare
-         R : Rec_Access with Import;
-         for R'Address use UD'Address;
-      begin
-         return R;
-      end;
+      if PyObject_HasAttrString (Self, "__userdata") then
+         UD :=
+           PyObject_GetAttrString (Self, "__userdata");
+         declare
+            A : constant System.Address := PyCObject_AsVoidPtr (UD);
+            R : Rec_Access with Import;
+            for R'Address use A'Address;
+         begin
+            return R;
+         end;
+      end if;
+      return null;
    end To_Ada;
 
    ------------
@@ -130,33 +150,65 @@ package body Py_Bind.Py_Value is
       return To_Ada (Self).all;
    end To_Ada;
 
+   -------------------------
+   -- Default_Constructor --
+   -------------------------
+
+   function Default_Constructor
+     (Data : PyObject; Args : PyObject) return PyObject
+   is
+      pragma Unreferenced (Data);
+      R : Rec_Access;
+      Self : PyObject;
+   begin
+      if Args /= null then
+         Self := PyObject_GetItem (Args, 0);
+         if Self /= null then
+            R := To_Ada (Self);
+            if R = null then
+               R := new Rec;
+               Set_UD (R, Self);
+            end if;
+         end if;
+      end if;
+
+      return Py_None;
+   end Default_Constructor;
+
    procedure Init is
 
       use Interfaces.C.Strings;
 
-      Dict    : constant PyDictObject := PyDict_New;
-      Ignored : Integer;
-      S       : chars_ptr;
+      Dict        : constant PyDictObject := PyDict_New;
+      Ignored     : Integer;
+      S           : chars_ptr;
+      Constructor : PyMethodDef;
    begin
       PyDict_SetItemString
         (Dict, "__module__",
-         PyObject_GetAttrString (Module.Module, "__name__"));
+         PyObject_GetAttrString (Module.Desc.Module, "__name__"));
 
       Class := Type_New
         (Name  => Name,
          Bases => null,
          Dict  => Dict);
+
       if Class = null then
          PyErr_Print;
          raise Program_Error
            with "Could not register class " & Name;
       end if;
 
+      Constructor :=
+        Create_Method_Def
+          ("__init__", Default_Constructor'Unrestricted_Access);
+
+      Add_Method (Class, Constructor, Module => Module.Desc.Module);
       S := New_String (Name);
-      Ignored := PyModule_AddObject (Module.Module, S, Class);
+      Ignored := PyModule_AddObject (Module.Desc.Module, S, Class);
       Free (S);
    end Init;
 
 begin
-   Module.Init_Fns.Append (Init'Unrestricted_Access);
+   Init;
 end Py_Bind.Py_Value;
