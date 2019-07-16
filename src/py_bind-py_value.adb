@@ -5,12 +5,17 @@ with System;
 
 package body Py_Bind.Py_Value is
 
+   type T_Access is access all T;
+
    procedure Init;
    procedure Set_UD (Self : Rec_Access; Obj : PyObject);
 
    function To_Python (Self : Rec_Access; Owns_Ptr : Boolean := True) return T;
 
    function Default_Constructor
+     (Data : PyObject; Args : PyObject) return PyObject with Convention => C;
+
+   function Default_Destructor
      (Data : PyObject; Args : PyObject) return PyObject with Convention => C;
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -35,7 +40,7 @@ package body Py_Bind.Py_Value is
    -- Free --
    ----------
 
-   overriding procedure Free (Self : in out T) is
+   overriding procedure Destroy (Self : in out T) is
    begin
       if Self.Owns_Data then
          declare
@@ -46,25 +51,25 @@ package body Py_Bind.Py_Value is
          end;
       end if;
       Destroy (Self);
-   end Free;
+   end Destroy;
 
    ---------------
    -- To_Python --
    ---------------
 
-   function To_Python (Self : Rec_Access) return T is
+   function To_Python_Unsafe (Self : Rec_Access) return Py_Object'Class is
    begin
       return To_Python (Self, False);
-   end To_Python;
+   end To_Python_Unsafe;
 
    ---------------
    -- To_Python --
    ---------------
 
-   function To_Python (Self : Rec) return T is
+   function To_Python_Unsafe (Self : Rec) return Py_Object'Class is
    begin
       return To_Python (new Rec'(Self), True);
-   end To_Python;
+   end To_Python_Unsafe;
 
    ---------------
    -- To_Python --
@@ -74,24 +79,30 @@ package body Py_Bind.Py_Value is
    is
       Obj  : PyObject;
       Args : PyObject;
+      New_Method : constant PyObject :=
+        PyObject_GetAttrString (Class, "__new__");
+      Init_Method : constant PyObject :=
+        PyObject_GetAttrString (Class, "__init__");
+      T_Inst : T_Access;
    begin
 
       --  Creating a new instance is equivalent to calling its metaclass. This
       --  is true for both new-style classes and old-style classes (for which
       --  the tp_call slot is set to PyInstance_New.
+
       --  Here, we are in fact calling  Class.__new__ (cls, *args, **kwargs).
       --  After allocating memory, this in turns automatically tp_init in the
       --  type definition, which in the case of GNATCOLL cases is often set to
       --  slot_tp_init. The latter in turn calls __init__
-      --
-      --  ??? This API does not permit passing extra parameters to the call
 
-      Args := PyTuple_New (0);
+      Args := PyTuple_New (1);
+      PyTuple_SetItem (Args, 0, Class);
+
       Obj := PyObject_Call
-        (Object => Class,
+        (Object => New_Method,
          Args   => Args,
          Kw     => null);   --  NOT: Py_None, which is not a valid dictionary
-      Py_DECREF (Args);
+      Py_DECREF (New_Method);
 
       if Obj = null then
          if Active (Me) then
@@ -115,9 +126,22 @@ package body Py_Bind.Py_Value is
       --  Set Self as user data on python object
       Set_UD (Self, Obj);
 
-      return T'(Refcount.Refcounted
-                with Py_Data   => Obj,
-                Owns_Data      => Owns_Ptr);
+      PyTuple_SetItem (Args, 0, Obj);
+
+      declare
+         Dummy : PyObject := PyObject_Call
+           (Object => Init_Method,
+            Args   => Args,
+            Kw     => null);
+      begin
+         Py_DECREF (Args);
+         Py_DECREF (Init_Method);
+      end;
+
+      T_Inst := new T'(Py_Data   => Obj,
+                       Owns_Data => Owns_Ptr);
+
+      return T_Inst.all;
    end To_Python;
 
    ------------
@@ -128,8 +152,10 @@ package body Py_Bind.Py_Value is
       UD          : PyObject;
    begin
       if PyObject_HasAttrString (Self, "__userdata") then
-         UD :=
-           PyObject_GetAttrString (Self, "__userdata");
+         UD := PyObject_GetAttrString (Self, "__userdata");
+
+         --  Get the PyCapsule object embedded in the __userdata field
+
          declare
             A : constant System.Address := PyCObject_AsVoidPtr (UD);
             R : Rec_Access with Import;
@@ -175,6 +201,18 @@ package body Py_Bind.Py_Value is
       return Py_None;
    end Default_Constructor;
 
+   ------------------------
+   -- Default_Destructor --
+   ------------------------
+
+   function Default_Destructor
+     (Data : PyObject; Args : PyObject) return PyObject
+   is
+      pragma Unreferenced (Args, Data);
+   begin
+      return Py_None;
+   end Default_Destructor;
+
    procedure Init is
 
       use Interfaces.C.Strings;
@@ -182,7 +220,7 @@ package body Py_Bind.Py_Value is
       Dict        : constant PyDictObject := PyDict_New;
       Ignored     : Integer;
       S           : chars_ptr;
-      Constructor : PyMethodDef;
+      Constructor, Destructor : PyMethodDef;
    begin
       PyDict_SetItemString
         (Dict, "__module__",
@@ -203,7 +241,13 @@ package body Py_Bind.Py_Value is
         Create_Method_Def
           ("__init__", Default_Constructor'Unrestricted_Access);
 
+      Destructor :=
+        Create_Method_Def
+          ("__del__", Default_Destructor'Unrestricted_Access);
+
       Add_Method (Class, Constructor, Module => Module.Desc.Module);
+      Add_Method (Class, Destructor, Module => Module.Desc.Module);
+
       S := New_String (Name);
       Ignored := PyModule_AddObject (Module.Desc.Module, S, Class);
       Free (S);

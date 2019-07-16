@@ -1,3 +1,5 @@
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body Demo is
 
    --------------
@@ -77,5 +79,39 @@ package body Demo is
    begin
       S.Position := Point.all;
    end Set_Position;
+
+   ------------------
+   -- Dummy_Method --
+   ------------------
+
+   function Dummy_Method (Args : Py_Args) return PyObject is
+      pragma Unreferenced (Args);
+   begin
+      Put_Line ("Hello from Dummy_Method");
+      return PyInt_FromLong (1243);
+   end Dummy_Method;
+
+   ---------------
+   -- Translate --
+   ---------------
+
+   procedure Translate (Self : in out Shape; Move : Point) is
+   begin
+      Self.Position.X := Self.Position.X + Move.X;
+      Self.Position.Y := Self.Position.Y + Move.Y;
+   end Translate;
+
+   ------------------
+   -- Py_Translate --
+   ------------------
+
+   function Py_Translate (Args : Py_Args) return PyObject is
+      Self : constant Py_Shape.Rec_Access :=
+        Py_Shape.Access_Desc.Get_Arg (Args, 1);
+      P    : constant Point := Py_Point.Val_Desc.Get_Arg (Args, 2);
+   begin
+      Translate (Self.all, P);
+      return Py_None;
+   end Py_Translate;
 
 end Demo;

@@ -1,39 +1,29 @@
 with GNATCOLL.Python; use GNATCOLL.Python;
 with GNATCOLL.Traces;
 with GNATCOLL.Refcount;
+
 with Ada.Containers.Vectors;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Exceptions; use Ada.Exceptions;
+with Ada.Containers.Indefinite_Hashed_Sets;
+with Ada.Strings.Hash;
 
 package Py_Bind is
-   type Py_Object is interface;
-
-   function Get_PyObject (Self : Py_Object) return PyObject is abstract;
-   procedure Destroy (Self : in out Py_Object) is null;
 
    use GNATCOLL;
    use GNATCOLL.Traces;
 
-   type Managed_Py_Object is new Refcount.Refcounted and Py_Object with record
+   type Py_Object is tagged record
       Py_Data : PyObject := Py_None;
    end record;
 
-   type Unmanaged_Py_Object is new Py_Object with record
-      Py_Data : PyObject := Py_None;
-   end record;
+   procedure Destroy (Self : in out Py_Object);
+   procedure Release (Self : in out Py_Object'Class);
 
-   overriding function Get_PyObject
-     (Self : Managed_Py_Object) return PyObject
-   is
-     (Self.Py_Data);
+   package Py_Object_Smart_Ptr
+   is new Refcount.Shared_Pointers (Py_Object'Class, Release);
 
-   overriding function Get_PyObject
-     (Self : Unmanaged_Py_Object) return PyObject
-   is
-     (Self.Py_Data);
-
-   overriding procedure Destroy
-     (Self : in out Unmanaged_Py_Object);
-   overriding procedure Destroy
-     (Self : in out Managed_Py_Object);
+   subtype Py_Object_Ref is Py_Object_Smart_Ptr.Ref;
 
    Me : Trace_Handle := Create ("Py_Bind", From_Config);
 
@@ -52,4 +42,58 @@ package Py_Bind is
 
    function Image (Obj : PyObject) return String;
    --  Utility function to print a PyObject
+
+   Python_Type_Error    : exception;
+   Python_Bounds_Error  : exception;
+
+   procedure Type_Error (Msg : String);
+   --  Raise a python type error with the given message.
+
+   procedure Index_Error (Msg : String);
+   --  Raise a python index error with the given message.
+
+   function Handle_Error (E : Exception_Occurrence) return PyObject;
+
+   --------------------------------------------------------------
+   -- Description of python functions arguments specifications --
+   --------------------------------------------------------------
+
+   package Name_Sets is new Ada.Containers.Indefinite_Hashed_Sets
+     (String, Ada.Strings.Hash, "=");
+
+   type Py_Arg_Spec is record
+      Name    : Unbounded_String;
+      Py_Type : PyObject;
+      Is_Kw   : Boolean := False;
+      Doc     : Unbounded_String := Null_Unbounded_String;
+   end record;
+
+   function Arg_Spec
+     (Name  : String; Py_Type : PyObject;
+      Is_Kw : Boolean := False; Doc : String := "") return Py_Arg_Spec
+   is
+     (Py_Arg_Spec'(To_Unbounded_String (Name), Py_Type, Is_Kw,
+                   To_Unbounded_String (Doc)));
+
+   type Py_Args_Spec is array (Positive range <>) of Py_Arg_Spec;
+
+   Empty_Args_Spec : Py_Args_Spec (1 .. 0) := (others => <>);
+
+   type Py_Args (Nb_Args : Natural) is new Py_Object with record
+      KwArgs       : PyObject;
+      Args_Spec    : Py_Args_Spec (1 .. Nb_Args);
+      Matched_Args : PyObject_Array (1 .. Nb_Args);
+   end record;
+
+   function Create
+     (Args, KwArgs : PyObject;
+      Args_Spec    : Py_Args_Spec;
+      Valid_Kws    : access Name_Sets.Set) return Py_Args;
+
+   function Min_Args (Args : Py_Args) return Natural;
+   function Max_Args (Args : Py_Args) return Natural;
+   function Get_Item (Args : Py_Args; Index : Positive) return PyObject;
+
+   overriding procedure Destroy (Self : in out Py_Args);
+
 end Py_Bind;

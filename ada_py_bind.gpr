@@ -34,7 +34,7 @@ library project Ada_Py_Bind is
       case Build_Mode is
          when "dev" =>
             for Default_Switches ("Ada") use ("-g", "-O0", "-gnatyg",
-                                              "-gnatwae");
+                                              "-gnatwa");
 
          when "prod" =>
             --  Debug information is useful even with optimization for
