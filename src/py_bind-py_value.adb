@@ -97,6 +97,7 @@ package body Py_Bind.Py_Value is
 
       Args := PyTuple_New (1);
       PyTuple_SetItem (Args, 0, Class);
+      Py_INCREF (Class);
 
       Obj := PyObject_Call
         (Object => New_Method,
@@ -126,7 +127,9 @@ package body Py_Bind.Py_Value is
       --  Set Self as user data on python object
       Set_UD (Self, Obj);
 
+      Py_DECREF (Class);
       PyTuple_SetItem (Args, 0, Obj);
+      Py_INCREF (Obj);
 
       declare
          Dummy : PyObject := PyObject_Call
@@ -236,6 +239,8 @@ package body Py_Bind.Py_Value is
          raise Program_Error
            with "Could not register class " & Name;
       end if;
+
+      Py_INCREF (Class);
 
       Constructor :=
         Create_Method_Def
