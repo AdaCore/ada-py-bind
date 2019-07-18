@@ -43,5 +43,6 @@ library project Ada_Py_Bind is
       end case;
    end Compiler;
 
+   Py_Bind_Lib_Options := ("-Wl,-z,origin,-rpath,$ORIGIN");
 
 end Ada_Py_Bind;
