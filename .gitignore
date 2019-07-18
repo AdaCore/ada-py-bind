@@ -27,3 +27,5 @@ gnatinspect.db-*
 
 # Custom grab bag dir
 /misc
+
+obj
