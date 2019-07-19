@@ -29,3 +29,6 @@ gnatinspect.db-*
 /misc
 
 obj
+
+# used for tmp test output
+tmp
