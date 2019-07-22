@@ -150,15 +150,29 @@ package body Py_Bind is
       Args_Spec    : Py_Args_Spec;
       Valid_Kws    : access Name_Sets.Set) return Py_Args
    is
-      Ret : Py_Args :=
+      Ret         : Py_Args :=
         Py_Args'
           (Args_Spec'Last, Args, KwArgs, Args_Spec, (others => Py_None));
-      Nb_Args : constant Positive := PyObject_Size (Args);
-
+      Nb_Pos_Args : constant Natural := PyObject_Size (Args);
+      Nb_Args     : constant Natural :=
+        (if KwArgs = null then 0 else PyObject_Size (KwArgs)) + Nb_Pos_Args;
    begin
+      --  Check number of arguments
+      if Nb_Args > Max_Args (Args_Spec) then
+         raise Python_Type_Error
+           with "Too many arguments. Expected max "
+           & Max_Args (Args_Spec)'Image & ", got " & Positive'Image (Nb_Args);
+      end if;
+
+      if Nb_Args > Max_Args (Args_Spec) then
+         raise Python_Type_Error
+           with "Too few arguments. Expected at least "
+           & Min_Args (Args_Spec)'Image & ", got " & Positive'Image (Nb_Args);
+      end if;
+
       --  Match arguments
       for J in Ret.Args_Spec'Range loop
-         if J <= Nb_Args then
+         if J <= Nb_Pos_Args then
             --  First, get argument positionally.
             Ret.Matched_Args (J) := PyObject_GetItem (Args, J - 1);
          else
