@@ -65,11 +65,11 @@ package body Py_Bind is
    -- Min_Args --
    --------------
 
-   function Min_Args (Args : Py_Args) return Natural
+   function Min_Args (Args : Py_Args_Spec) return Natural
    is
       Ret : Natural := 0;
    begin
-      for Arg of Args.Args_Spec loop
+      for Arg of Args loop
          if not Arg.Is_Kw then
             Ret := Ret + 1;
          end if;
@@ -81,9 +81,9 @@ package body Py_Bind is
    -- Max_Args --
    --------------
 
-   function Max_Args (Args : Py_Args) return Natural
+   function Max_Args (Args : Py_Args_Spec) return Natural
    is
-     (Args.Args_Spec'Length);
+     (Args'Length);
 
    -------------
    -- Destroy --

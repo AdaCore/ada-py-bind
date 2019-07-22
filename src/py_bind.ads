@@ -76,6 +76,8 @@ package Py_Bind is
                    To_Unbounded_String (Doc)));
 
    type Py_Args_Spec is array (Positive range <>) of Py_Arg_Spec;
+   function Min_Args (Args : Py_Args_Spec) return Natural;
+   function Max_Args (Args : Py_Args_Spec) return Natural;
 
    Empty_Args_Spec : Py_Args_Spec (1 .. 0) := (others => <>);
 
@@ -90,8 +92,10 @@ package Py_Bind is
       Args_Spec    : Py_Args_Spec;
       Valid_Kws    : access Name_Sets.Set) return Py_Args;
 
-   function Min_Args (Args : Py_Args) return Natural;
-   function Max_Args (Args : Py_Args) return Natural;
+   function Min_Args (Args : Py_Args) return Natural
+   is (Min_Args (Args.Args_Spec));
+   function Max_Args (Args : Py_Args) return Natural
+   is (Max_Args (Args.Args_Spec));
    function Get_Item (Args : Py_Args; Index : Positive) return PyObject;
 
    overriding procedure Destroy (Self : in out Py_Args);
