@@ -159,27 +159,31 @@ package body Py_Bind is
       --  Match arguments
       for J in Ret.Args_Spec'Range loop
          if J <= Nb_Args then
+            --  First, get argument positionally.
             Ret.Matched_Args (J) := PyObject_GetItem (Args, J - 1);
          else
+            --  If we're past positional arguments, try to get argument via kw.
             Ret.Matched_Args (J) :=
               Get_Item (Ret.KwArgs, To_String (Ret.Args_Spec (J).Name));
          end if;
       end loop;
 
-      --  If any mandatory argument hasn't been matched
+      --  Check arguments
       for J in Ret.Matched_Args'Range loop
          declare
             M_Arg : PyObject renames Ret.Matched_Args (J);
             Spec  : Py_Arg_Spec renames Ret.Args_Spec (J);
          begin
-
+            --  If any mandatory argument hasn't been matched, then raise an
+            --  error.
             if M_Arg = Py_None and then not Spec.Is_Kw then
                raise Python_Type_Error with
                  "Missing argument " & To_String (Spec.Name);
             end if;
 
-            if not PyObject_IsInstance (M_Arg, Spec.Py_Type)
-            then
+            --  If an argument has been matched but is of the wrong type, raise
+            --  an error.
+            if not PyObject_IsInstance (M_Arg, Spec.Py_Type) then
                raise Python_Type_Error with
                  "Wrong type for argument " & To_String (Spec.Name)
                  & ": expected " & Image (Spec.Py_Type)
@@ -188,7 +192,7 @@ package body Py_Bind is
          end;
       end loop;
 
-      --  Check that there aren't extra kw arguments
+      --  Check that there aren't extra kw arguments.
       if KwArgs /= null then
          declare
             Pos      : Integer := 0;
