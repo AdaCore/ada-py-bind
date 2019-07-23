@@ -1,5 +1,3 @@
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body Py_Bind is
 
    function Get_Item (Dict : PyObject; Key : String) return PyObject;
@@ -129,7 +127,6 @@ package body Py_Bind is
    function Handle_Error (E : Exception_Occurrence) return PyObject is
       E_Id : constant Exception_Id := Exception_Identity (E);
    begin
-      Put_Line ("IN HANDLE ERROR");
       if E_Id = Python_Bounds_Error'Identity then
          Index_Error (Exception_Message (E));
       elsif E_Id = Python_Type_Error'Identity then
@@ -138,7 +135,7 @@ package body Py_Bind is
          Reraise_Occurrence (E);
       end if;
 
-      return Py_None;
+      return null;
    end Handle_Error;
 
    ------------
