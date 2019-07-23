@@ -163,8 +163,20 @@ class DefaultDriver(BaseDriver):
         test_diff = diff.diff(self.test_dir('test.out'),
                               self.result.out.log.splitlines())
         if test_diff != '':
+
+            # Rewrite mode: If there is a diff and rewrite mode is on, rewrite
+            # the "test.out" file.
+            if self.env.options.rewrite:
+                with open(self.test_dir('test.out'), 'w') as f:
+                    f.write(self.result.out.log)
+
+            # Log the error diff
             logging.error("Diff in test")
             logging.error(test_diff)
+            if self.env.options.rewrite:
+                logging.info(
+                    "Rewritten test '{}'".format(self.test_env['test_name'])
+                )
             self.result.set_status(TestStatus.FAIL)
         else:
             self.result.set_status(TestStatus.PASS)

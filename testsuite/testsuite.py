@@ -26,6 +26,12 @@ class AdaPyBindTestsuite(Testsuite):
     def tear_up(self):
         pass
 
+    def add_options(self):
+        self.main.argument_parser.add_argument(
+            "--rewrite", '-r',
+            action="store_true",
+            help="Rewrite the baseline of failing tests")
+
     @property
     def default_driver(self):
         return 'default'
