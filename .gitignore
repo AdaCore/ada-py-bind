@@ -32,3 +32,6 @@ obj
 
 # used for tmp test output
 tmp
+
+# Output for py_bind lib
+lib
