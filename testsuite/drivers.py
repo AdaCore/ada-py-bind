@@ -124,7 +124,7 @@ class DefaultDriver(BaseDriver):
 
             library project Gen is
                for Source_Dirs use (".");
-               for Library_Dir use "lib";
+               for Library_Dir use "test";
                for Create_Missing_Dirs use "True";
 
                for Library_Name use "gen";
@@ -148,14 +148,15 @@ class DefaultDriver(BaseDriver):
 
         # Rename libgen so that it's named according to python native modules
         # conventions.
-        fs.mv(self.working_dir('lib', 'libgen.so'),
-              self.working_dir('lib', 'gen.so'))
+        fs.mv(self.working_dir('test', 'libgen.so'),
+              self.working_dir('test', 'gen.so'))
 
         environ['PYTHONPATH'] = P.pathsep.join(
-            keep([environ.get('PYTHONPATH'), self.working_dir('lib')])
+            keep([environ.get('PYTHONPATH'), self.working_dir('test')])
         )
+        fs.cp(self.test_dir('test.py'), self.working_dir('test', 'test.py'))
 
-        self.run_and_check(['python', self.test_dir('test.py')],
+        self.run_and_check(['python', self.working_dir('test', 'test.py')],
                            append_output=True)
 
     def analyze(self, prev):
