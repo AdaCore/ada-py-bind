@@ -13,7 +13,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from distutils.spawn import find_executable
 from e3.testsuite import Testsuite
 
 from drivers import DefaultDriver
@@ -30,7 +29,8 @@ class AdaPyBindTestsuite(Testsuite):
         self.main.argument_parser.add_argument(
             "--rewrite", '-r',
             action="store_true",
-            help="Rewrite the baseline of failing tests")
+            help="Rewrite the baseline of failing tests"
+        )
 
     @property
     def default_driver(self):
