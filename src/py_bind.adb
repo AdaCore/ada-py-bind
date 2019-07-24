@@ -2,6 +2,10 @@ package body Py_Bind is
 
    function Get_Item (Dict : PyObject; Key : String) return PyObject;
 
+   function Stripped_Image (Self : Integer) return String;
+   --  Return the image of ``Self`` without a leading whitespace if Self is a
+   --  natural number.
+
    -------------
    -- Destroy --
    -------------
@@ -152,6 +156,16 @@ package body Py_Bind is
       return null;
    end Handle_Error;
 
+   --------------------
+   -- Stripped_Image --
+   --------------------
+
+   function Stripped_Image (Self : Integer) return String is
+      Img : constant String := Self'Image;
+   begin
+      return (if Img (1) = '-' then Img else Img (2 .. Img'Last));
+   end Stripped_Image;
+
    ------------
    -- Create --
    ------------
@@ -173,13 +187,15 @@ package body Py_Bind is
       if Nb_Args > Max_Args (Args_Spec) then
          raise Python_Type_Error
            with "Too many arguments. Expected max "
-           & Max_Args (Args_Spec)'Image & ", got " & Positive'Image (Nb_Args);
+           & Stripped_Image (Max_Args (Args_Spec))
+           & ", got " & Stripped_Image (Positive (Nb_Args));
       end if;
 
       if Nb_Args > Max_Args (Args_Spec) then
          raise Python_Type_Error
            with "Too few arguments. Expected at least "
-           & Min_Args (Args_Spec)'Image & ", got " & Positive'Image (Nb_Args);
+           & Stripped_Image (Min_Args (Args_Spec))
+           & ", got " & Stripped_Image (Nb_Args);
       end if;
 
       --  Match arguments
