@@ -1,0 +1,10 @@
+In show_error:
+    Missing argument move
+In show_error:
+    Wrong type for argument move: expected <class 'gen.Point'>, got <type 'str'>
+In show_error:
+    Too many arguments. Expected max 2, got 3
+In show_error:
+    OK
+In show_error:
+    OK
