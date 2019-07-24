@@ -36,5 +36,6 @@ class AdaPyBindTestsuite(Testsuite):
     def default_driver(self):
         return 'default'
 
+
 if __name__ == '__main__':
-    AdaPyBindTestsuite(os.path.dirname(__file__)).testsuite_main()
+    AdaPyBindTestsuite(os.path.dirname(__file__)).testsuite_main(dev_mode=True)
