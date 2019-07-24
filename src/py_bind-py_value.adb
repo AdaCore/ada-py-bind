@@ -189,7 +189,19 @@ package body Py_Bind.Py_Value is
       pragma Unreferenced (Data);
       R : Rec_Access;
       Self : PyObject;
+
    begin
+      --  Check arguments
+      declare
+         Spec : constant Py_Args_Spec := Create
+           ((1 => Arg_Spec
+             (Name    => "Self",
+              Py_Type => Py_Type, Is_Kw => False, Doc => "")));
+         Dummy_Args : constant Py_Args := Create (Args, null, Spec);
+      begin
+         null;
+      end;
+
       if Args /= null then
          Self := PyObject_GetItem (Args, 0);
          if Self /= null then
@@ -202,6 +214,8 @@ package body Py_Bind.Py_Value is
       end if;
 
       return Py_None;
+   exception
+         when E : others => return Handle_Error (E);
    end Default_Constructor;
 
    ------------------------

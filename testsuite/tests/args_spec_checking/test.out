@@ -8,3 +8,5 @@ In show_error:
     OK
 In show_error:
     OK
+In show_error:
+    Too many arguments. Expected max 1, got 2
