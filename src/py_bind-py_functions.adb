@@ -6,7 +6,7 @@ package body Py_Bind.Py_Functions is
 
    package body Raw_Function is
 
-      Names : Name_Sets.Set;
+      Args_Spec : constant Py_Args_Spec := Create (Args);
 
       function Raw_Method
         (Dummy : PyObject; Args : PyObject; KwArgs : PyObject) return PyObject
@@ -21,8 +21,7 @@ package body Py_Bind.Py_Functions is
       is
       begin
          declare
-            PA : constant Py_Args :=
-              Create (Args, KwArgs, Args_Spec, Names'Unrestricted_Access);
+            PA : constant Py_Args := Create (Args, KwArgs, Args_Spec);
          begin
             return Func (PA);
          end;
@@ -41,10 +40,6 @@ package body Py_Bind.Py_Functions is
       else
          Add_Method (Class.Py_Type, M, null, Module);
       end if;
-
-      for Arg_Spec of Args_Spec loop
-         Names.Include (To_String (Arg_Spec.Name));
-      end loop;
 
    end Raw_Function;
 

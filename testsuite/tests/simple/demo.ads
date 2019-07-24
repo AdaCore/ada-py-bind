@@ -69,8 +69,8 @@ package Demo is
    package Py_Shape_Translate is new Py_Bind.Py_Functions.Raw_Function
      ("translate", Py_Translate, Py_Shape,
       Doc => "Dummy doc",
-      Args_Spec => (Arg_Spec ("self", Py_Shape.Py_Type),
-                    Arg_Spec ("move", Py_Point.Py_Type)));
+      Args => (Arg_Spec ("self", Py_Shape.Py_Type),
+               Arg_Spec ("move", Py_Point.Py_Type)));
 
    procedure Initialize_Module;
    pragma Export (C, Initialize_Module, "initgen");

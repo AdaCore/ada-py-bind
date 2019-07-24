@@ -59,6 +59,20 @@ package body Py_Bind is
       PyErr_SetString (PyExc_TypeError, Msg);
    end Index_Error;
 
+   ------------
+   -- Create --
+   ------------
+
+   function Create (Args : Py_Arg_Spec_Array) return Py_Args_Spec is
+   begin
+      return Args_Spec : Py_Args_Spec (Args'Length) do
+         Args_Spec.Args := Args;
+         for Arg_Spec of Args_Spec.Args loop
+            Args_Spec.Valid_Kws.Include (To_String (Arg_Spec.Name));
+         end loop;
+      end return;
+   end Create;
+
    --------------
    -- Min_Args --
    --------------
@@ -67,7 +81,7 @@ package body Py_Bind is
    is
       Ret : Natural := 0;
    begin
-      for Arg of Args loop
+      for Arg of Args.Args loop
          if not Arg.Is_Kw then
             Ret := Ret + 1;
          end if;
@@ -81,7 +95,7 @@ package body Py_Bind is
 
    function Max_Args (Args : Py_Args_Spec) return Natural
    is
-     (Args'Length);
+     (Args.Nb_Args);
 
    -------------
    -- Destroy --
@@ -144,12 +158,13 @@ package body Py_Bind is
 
    function Create
      (Args, KwArgs : PyObject;
-      Args_Spec    : Py_Args_Spec;
-      Valid_Kws    : access Name_Sets.Set) return Py_Args
+      Args_Spec    : Py_Args_Spec) return Py_Args
    is
       Ret         : Py_Args :=
         Py_Args'
-          (Args_Spec'Last, Args, KwArgs, Args_Spec, (others => Py_None));
+          (Args_Spec.Nb_Args, Args, KwArgs,
+           Args_Spec'Unrestricted_Access,
+           (others => Py_None));
       Nb_Pos_Args : constant Natural := PyObject_Size (Args);
       Nb_Args     : constant Natural :=
         (if KwArgs = null then 0 else PyObject_Size (KwArgs)) + Nb_Pos_Args;
@@ -168,14 +183,14 @@ package body Py_Bind is
       end if;
 
       --  Match arguments
-      for J in Ret.Args_Spec'Range loop
+      for J in Ret.Args_Spec.Args'Range loop
          if J <= Nb_Pos_Args then
             --  First, get argument positionally.
             Ret.Matched_Args (J) := PyObject_GetItem (Args, J - 1);
          else
             --  If we're past positional arguments, try to get argument via kw.
             Ret.Matched_Args (J) :=
-              Get_Item (Ret.KwArgs, To_String (Ret.Args_Spec (J).Name));
+              Get_Item (Ret.KwArgs, To_String (Ret.Args_Spec.Args (J).Name));
          end if;
       end loop;
 
@@ -183,7 +198,7 @@ package body Py_Bind is
       for J in Ret.Matched_Args'Range loop
          declare
             M_Arg : PyObject renames Ret.Matched_Args (J);
-            Spec  : Py_Arg_Spec renames Ret.Args_Spec (J);
+            Spec  : Py_Arg_Spec renames Ret.Args_Spec.Args (J);
          begin
             --  If any mandatory argument hasn't been matched, then raise an
             --  error.
@@ -211,7 +226,8 @@ package body Py_Bind is
          begin
             loop
                PyDict_Next (KwArgs, Pos, Key, Val);
-               if not Valid_Kws.Contains (PyString_AsString (Key)) then
+               if not Args_Spec.Valid_Kws.Contains (PyString_AsString (Key))
+               then
                   raise Python_Type_Error with
                     "Unexpected kw argument: " & PyString_AsString (Key);
                end if;

@@ -1,7 +1,9 @@
 with GNATCOLL.Python; use GNATCOLL.Python;
 with GNATCOLL.Traces;
 with GNATCOLL.Refcount;
+with GNATCOLL.Strings;
 
+with Ada.Containers; use Ada.Containers;
 with Ada.Containers.Vectors;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Exceptions; use Ada.Exceptions;
@@ -75,27 +77,42 @@ package Py_Bind is
      (Py_Arg_Spec'(To_Unbounded_String (Name), Py_Type, Is_Kw,
                    To_Unbounded_String (Doc)));
 
-   type Py_Args_Spec is array (Positive range <>) of Py_Arg_Spec;
+   type Py_Arg_Spec_Array is array (Positive range <>) of Py_Arg_Spec;
+   Empty_Arg_Spec_Array : Py_Arg_Spec_Array (1 .. 0) := (others => <>);
+
+   type Py_Args_Spec (Nb_Args : Natural) is limited record
+      Args      : Py_Arg_Spec_Array (1 .. Nb_Args);
+      Valid_Kws : Name_Sets.Set;
+   end record;
+   --  Profile for a python function, containing specification of all the
+   --  arguments, as well as valid keyword arg values.
+
+   function Create (Args : Py_Arg_Spec_Array) return Py_Args_Spec;
+   --  Create a fresh ``Py_Args_Spec`` instance from an array of arg specs
+
    function Min_Args (Args : Py_Args_Spec) return Natural;
+   --  Return the minimum number of arguments
+
    function Max_Args (Args : Py_Args_Spec) return Natural;
 
-   Empty_Args_Spec : Py_Args_Spec (1 .. 0) := (others => <>);
+   Empty_Args_Spec : Py_Args_Spec (0) := (0, others => <>);
+
+   type Py_Args_Spec_Access is access all Py_Args_Spec;
 
    type Py_Args (Nb_Args : Natural) is new Py_Object with record
       KwArgs       : PyObject;
-      Args_Spec    : Py_Args_Spec (1 .. Nb_Args);
+      Args_Spec    : Py_Args_Spec_Access;
       Matched_Args : PyObject_Array (1 .. Nb_Args);
    end record;
 
    function Create
      (Args, KwArgs : PyObject;
-      Args_Spec    : Py_Args_Spec;
-      Valid_Kws    : access Name_Sets.Set) return Py_Args;
+      Args_Spec    : Py_Args_Spec) return Py_Args;
 
    function Min_Args (Args : Py_Args) return Natural
-   is (Min_Args (Args.Args_Spec));
+   is (Min_Args (Args.Args_Spec.all));
    function Max_Args (Args : Py_Args) return Natural
-   is (Max_Args (Args.Args_Spec));
+   is (Max_Args (Args.Args_Spec.all));
    function Get_Item (Args : Py_Args; Index : Positive) return PyObject;
 
    overriding procedure Destroy (Self : in out Py_Args);
