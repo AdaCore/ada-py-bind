@@ -8,15 +8,23 @@ package body Py_Bind.Py_Value is
    type T_Access is access all T;
 
    procedure Init;
-   procedure Set_UD (Self : Rec_Access; Obj : PyObject);
+   --  Initialization of the module. Called at elaboration
 
-   function To_Python (Self : Rec_Access; Owns_Ptr : Boolean := True) return T;
+   procedure Set_UD (Self : Rec_Access; Obj : PyObject);
+   --  Put `Self` in `Obj` as a PyCapsule, in the `__userdata` field
+
+   function To_Python
+     (Self              : Rec_Access;
+      Owns_Ptr          : Boolean := True) return T;
+   --  Constructor: Creates a python object from `Self`.
 
    function Default_Constructor
      (Data : PyObject; Args : PyObject) return PyObject with Convention => C;
+   --  Default constructor Python function.
 
    function Default_Destructor
      (Data : PyObject; Args : PyObject) return PyObject with Convention => C;
+   --  Default destructor Python function.
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Rec,
@@ -41,14 +49,11 @@ package body Py_Bind.Py_Value is
    ----------
 
    overriding procedure Destroy (Self : in out T) is
+      R : Rec_Access := To_Ada (Self.Py_Data);
    begin
+      Destroy (R.all);
       if Self.Owns_Data then
-         declare
-            R : Rec_Access := To_Ada (Self.Py_Data);
-         begin
-            Destroy (R.all);
-            Free (R);
-         end;
+         Free (R);
       end if;
       Destroy (Self);
    end Destroy;
@@ -193,7 +198,7 @@ package body Py_Bind.Py_Value is
    begin
       --  Check arguments
       declare
-         Spec : constant Py_Args_Spec := Create
+         Spec : constant Py_Fn_Profile := Create_Profile
            ((1 => Arg_Spec
              (Name    => "Self",
               Py_Type => Py_Type, Is_Kw => False, Doc => "")));
@@ -225,10 +230,27 @@ package body Py_Bind.Py_Value is
    function Default_Destructor
      (Data : PyObject; Args : PyObject) return PyObject
    is
-      pragma Unreferenced (Args, Data);
+      pragma Unreferenced (Data);
    begin
+      --  Check arguments
+      declare
+         Spec       : constant Py_Fn_Profile := Create_Profile
+           ((1 => Arg_Spec
+             (Name    => "Self",
+              Py_Type => Py_Type, Is_Kw => False, Doc => "")));
+         Dummy_Args : constant Py_Args := Create (Args, null, Spec);
+      begin
+         null;
+      end;
+
       return Py_None;
+   exception
+         when E : others => return Handle_Error (E);
    end Default_Destructor;
+
+   ----------
+   -- Init --
+   ----------
 
    procedure Init is
 

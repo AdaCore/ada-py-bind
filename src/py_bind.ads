@@ -78,41 +78,49 @@ package Py_Bind is
                    To_Unbounded_String (Doc)));
 
    type Py_Arg_Spec_Array is array (Positive range <>) of Py_Arg_Spec;
-   Empty_Arg_Spec_Array : Py_Arg_Spec_Array (1 .. 0) := (others => <>);
+   No_Args : Py_Arg_Spec_Array (1 .. 0) := (others => <>);
 
-   type Py_Args_Spec (Nb_Args : Natural) is limited record
+   type Py_Fn_Profile (Nb_Args : Natural) is record
       Args      : Py_Arg_Spec_Array (1 .. Nb_Args);
+      Ret_Type  : PyObject := null;
       Valid_Kws : Name_Sets.Set;
    end record;
    --  Profile for a python function, containing specification of all the
    --  arguments, as well as valid keyword arg values.
 
-   function Create (Args : Py_Arg_Spec_Array) return Py_Args_Spec;
-   --  Create a fresh ``Py_Args_Spec`` instance from an array of arg specs
+   function Create_Profile
+     (Args     : Py_Arg_Spec_Array;
+      Ret_Type : PyObject := null) return Py_Fn_Profile;
+   --  Create a fresh ``Py_Fn_Profile`` instance from an array of arg specs
 
-   function Min_Args (Args : Py_Args_Spec) return Natural;
+   function Empty_Profile return Py_Fn_Profile
+   is (Create_Profile (No_Args));
+
+   function Min_Args (Args : Py_Fn_Profile) return Natural;
    --  Return the minimum number of arguments
 
-   function Max_Args (Args : Py_Args_Spec) return Natural;
+   function Max_Args (Args : Py_Fn_Profile) return Natural;
 
-   Empty_Args_Spec : Py_Args_Spec (0) := (0, others => <>);
+   Empty_Args_Spec : Py_Fn_Profile (0) := (0, others => <>);
 
-   type Py_Args_Spec_Access is access all Py_Args_Spec;
+   type Py_Fn_Profile_Access is access all Py_Fn_Profile;
 
    type Py_Args (Nb_Args : Natural) is new Py_Object with record
       KwArgs       : PyObject;
-      Args_Spec    : Py_Args_Spec_Access;
+      Args_Spec    : Py_Fn_Profile_Access;
       Matched_Args : PyObject_Array (1 .. Nb_Args);
    end record;
 
    function Create
      (Args, KwArgs : PyObject;
-      Args_Spec    : Py_Args_Spec) return Py_Args;
+      Args_Spec    : Py_Fn_Profile) return Py_Args;
 
    function Min_Args (Args : Py_Args) return Natural
    is (Min_Args (Args.Args_Spec.all));
+
    function Max_Args (Args : Py_Args) return Natural
    is (Max_Args (Args.Args_Spec.all));
+
    function Get_Item (Args : Py_Args; Index : Positive) return PyObject;
 
    overriding procedure Destroy (Self : in out Py_Args);

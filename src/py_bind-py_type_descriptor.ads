@@ -7,8 +7,6 @@ generic
      (Self : Ada_Type) return Py_Object'Class is <>;
 
    with function To_Ada (Self : PyObject) return Ada_Type is <>;
-
-   with procedure Destroy (Self : in out Ada_Type) is null;
 package Py_Bind.Py_Type_Descriptor is
 
    subtype Ada_T is Ada_Type;
@@ -19,7 +17,6 @@ package Py_Bind.Py_Type_Descriptor is
      (Self : Ada_T) return Py_Object'Class renames To_Python_Unsafe;
 
    function P_To_Ada (Self : PyObject) return Ada_T renames To_Ada;
-   procedure P_Destroy (Self : in out Ada_T) renames Destroy;
    function P_Py_Type return PyObject renames Py_Type;
 
    function Get_Arg (Args : Py_Args; Index : Positive) return Ada_Type;

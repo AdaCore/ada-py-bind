@@ -1,4 +1,5 @@
 with Py_Bind.Py_Value;
+with Py_Bind.Py_Module;
 
 package Py_Bind.Py_Functions is
 
@@ -6,9 +7,19 @@ package Py_Bind.Py_Functions is
       Name     : String;
       with function Func (Args : Py_Args) return PyObject;
       with package Class is new Py_Bind.Py_Value (<>);
-      Module : PyObject := Class.Module.Desc.Module;
-      Args   : Py_Arg_Spec_Array := Empty_Arg_Spec_Array;
-      Doc    : String := "";
+
+      Profile  : Py_Fn_Profile := Empty_Profile;
+      Doc      : String := "";
+   package Raw_Method is
+      function Method return PyMethodDef;
+   end Raw_Method;
+
+   generic
+      Name     : String;
+      with function Func (Args : Py_Args) return PyObject;
+      with package Module is new Py_Bind.Py_Module (<>);
+      Profile  : Py_Fn_Profile;
+      Doc      : String := "";
    package Raw_Function is
       function Method return PyMethodDef;
    end Raw_Function;

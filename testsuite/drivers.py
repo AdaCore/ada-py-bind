@@ -9,6 +9,7 @@ import e3.fs as fs
 from os import environ
 import logging
 from funcy import keep
+import sys
 
 
 class SetupError(Exception):
@@ -123,7 +124,7 @@ class DefaultDriver(BaseDriver):
             with "ada_py_bind";
 
             library project Gen is
-               for Source_Dirs use (".");
+               for Source_Dirs use ("{}");
                for Library_Dir use "test";
                for Create_Missing_Dirs use "True";
 
@@ -137,24 +138,34 @@ class DefaultDriver(BaseDriver):
                package Compiler renames Ada_Py_Bind.Compiler;
                for Leading_Library_Options use Ada_Py_Bind.Py_Bind_Lib_Options;
             end Gen;
-            ''')
+            '''.format(P.abspath(self.test_dir())))
 
-        fs.cp(self.test_dir('*.ad?'), self.working_dir())
+        with open(self.working_dir('gen.py'), 'w') as f:
+            f.write('''
+import os.path as P
+import subprocess
+
+import e3.fs as fs
+
+# Build the library
+subprocess.check_call([
+    'gprbuild', '-XLIBRARY_TYPE=relocatable', '-Pgen'
+])
+
+# Rename libgen so that it's named according to python native modules
+# conventions.
+fs.mv(P.join('test', 'libgen.so'), P.join('test', 'gen.so'))
+            ''')
 
     @catch_test_errors
     def run(self, prev):
-        # Build the library
-        self.run_and_check(['gprbuild', '-XLIBRARY_TYPE=relocatable', '-Pgen'])
-
-        # Rename libgen so that it's named according to python native modules
-        # conventions.
-        fs.mv(self.working_dir('test', 'libgen.so'),
-              self.working_dir('test', 'gen.so'))
+        fs.mkdir(self.working_dir('test'))
+        fs.cp(self.test_dir('test.py'), self.working_dir('test', 'test.py'))
+        self.run_and_check([sys.executable, 'gen.py'])
 
         environ['PYTHONPATH'] = P.pathsep.join(
             keep([environ.get('PYTHONPATH'), self.working_dir('test')])
         )
-        fs.cp(self.test_dir('test.py'), self.working_dir('test', 'test.py'))
 
         self.run_and_check(['python', self.working_dir('test', 'test.py')],
                            append_output=True)

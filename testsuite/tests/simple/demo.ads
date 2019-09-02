@@ -63,14 +63,14 @@ package Demo is
    function Dummy_Method (Args : Py_Args) return PyObject;
    function Py_Translate (Args : Py_Args) return PyObject;
 
-   package Py_Shape_Dummy_Method is new Py_Bind.Py_Functions.Raw_Function
+   package Py_Shape_Dummy_Method is new Py_Bind.Py_Functions.Raw_Method
      ("dummy", Dummy_Method, Py_Shape, Doc => "Dummy doc");
 
-   package Py_Shape_Translate is new Py_Bind.Py_Functions.Raw_Function
+   package Py_Shape_Translate is new Py_Bind.Py_Functions.Raw_Method
      ("translate", Py_Translate, Py_Shape,
       Doc => "Dummy doc",
-      Args => (Arg_Spec ("self", Py_Shape.Py_Type),
-               Arg_Spec ("move", Py_Point.Py_Type)));
+      Profile => Create_Profile ((Arg_Spec ("self", Py_Shape.Py_Type),
+                                  Arg_Spec ("move", Py_Point.Py_Type))));
 
    procedure Initialize_Module;
    pragma Export (C, Initialize_Module, "initgen");

@@ -13,7 +13,6 @@ package Py_Bind.Py_Property is
         (Self : Self_Val.Val_Desc.Ada_T) return Val_Desc.Ada_Type;
       with procedure Setter (Self : in out Self_Val.Val_Desc.Ada_T;
                              Val  : Val_Desc.Ada_Type);
---        Parent_Owns_Result : Boolean := False;
    package Byval is
       function Raw_Getter
         (Obj : PyObject; Dummy : System.Address) return PyObject
@@ -33,7 +32,6 @@ package Py_Bind.Py_Property is
         (Self : Self_Val.Access_Desc.Ada_T) return Val_Desc.Ada_Type;
       with procedure Setter (Self : Self_Val.Access_Desc.Ada_T;
                              Val  : Val_Desc.Ada_Type);
---        Parent_Owns_Result : Boolean := False;
    package Byref is
       function Raw_Getter
         (Obj : PyObject; Dummy : System.Address) return PyObject

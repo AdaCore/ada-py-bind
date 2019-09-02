@@ -1,3 +1,5 @@
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body Py_Bind is
 
    function Get_Item (Dict : PyObject; Key : String) return PyObject;
@@ -67,21 +69,24 @@ package body Py_Bind is
    -- Create --
    ------------
 
-   function Create (Args : Py_Arg_Spec_Array) return Py_Args_Spec is
+   function Create_Profile
+     (Args     : Py_Arg_Spec_Array;
+      Ret_Type : PyObject := null) return Py_Fn_Profile is
    begin
-      return Args_Spec : Py_Args_Spec (Args'Length) do
+      return Args_Spec : Py_Fn_Profile (Args'Length) do
          Args_Spec.Args := Args;
+         Args_Spec.Ret_Type := Ret_Type;
          for Arg_Spec of Args_Spec.Args loop
             Args_Spec.Valid_Kws.Include (To_String (Arg_Spec.Name));
          end loop;
       end return;
-   end Create;
+   end Create_Profile;
 
    --------------
    -- Min_Args --
    --------------
 
-   function Min_Args (Args : Py_Args_Spec) return Natural
+   function Min_Args (Args : Py_Fn_Profile) return Natural
    is
       Ret : Natural := 0;
    begin
@@ -97,7 +102,7 @@ package body Py_Bind is
    -- Max_Args --
    --------------
 
-   function Max_Args (Args : Py_Args_Spec) return Natural
+   function Max_Args (Args : Py_Fn_Profile) return Natural
    is
      (Args.Nb_Args);
 
@@ -172,7 +177,7 @@ package body Py_Bind is
 
    function Create
      (Args, KwArgs : PyObject;
-      Args_Spec    : Py_Args_Spec) return Py_Args
+      Args_Spec    : Py_Fn_Profile) return Py_Args
    is
       Ret         : Py_Args :=
         Py_Args'
@@ -183,6 +188,7 @@ package body Py_Bind is
       Nb_Args     : constant Natural :=
         (if KwArgs = null then 0 else PyObject_Size (KwArgs)) + Nb_Pos_Args;
    begin
+
       --  Check number of arguments
       if Nb_Args > Max_Args (Args_Spec) then
          raise Python_Type_Error
