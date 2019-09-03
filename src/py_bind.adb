@@ -54,6 +54,17 @@ package body Py_Bind is
       PyErr_SetString (PyExc_TypeError, Msg);
    end Type_Error;
 
+   -------------------
+   -- Runtime_Error --
+   -------------------
+
+   procedure Runtime_Error (Msg : String) is
+      PyExc_RuntimeError : PyObject;
+      pragma Import (C, PyExc_RuntimeError, "PyExc_RuntimeError");
+   begin
+      PyErr_SetString (PyExc_RuntimeError, Msg);
+   end Runtime_Error;
+
    -----------------
    -- Index_Error --
    -----------------

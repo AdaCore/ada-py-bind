@@ -47,6 +47,8 @@ package Py_Bind is
 
    Python_Type_Error    : exception;
    Python_Bounds_Error  : exception;
+   procedure Runtime_Error (Msg : String);
+   --  Raise a python runtime error with the given message.
 
    procedure Type_Error (Msg : String);
    --  Raise a python type error with the given message.
