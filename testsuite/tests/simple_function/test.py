@@ -1,3 +1,4 @@
 import gen
 
-print gen.add(1, 2)
+a = gen.add(1, 2)
+print gen.add(a, 12)
