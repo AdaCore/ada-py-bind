@@ -1,4 +1,9 @@
 package body Py_Bind.Types is
+   PyString_Type : aliased Dummy;
+   pragma Import (C, PyString_Type, "PyString_Type");
+
+   PyInt_Type : aliased Dummy;
+   pragma Import (C, PyInt_Type, "PyInt_Type");
 
    ------------
    -- To_Ada --
@@ -14,5 +19,23 @@ package body Py_Bind.Types is
          raise Python_Type_Error;
       end if;
    end To_Ada;
+
+   --------------------
+   -- Py_String_Type --
+   --------------------
+
+   function Py_String_Type return PyObject is
+   begin
+      return PyString_Type'Unrestricted_Access;
+   end Py_String_Type;
+
+   -----------------
+   -- Py_Int_Type --
+   -----------------
+
+   function Py_Int_Type return PyObject is
+   begin
+      return PyInt_Type'Unrestricted_Access;
+   end Py_Int_Type;
 
 end Py_Bind.Types;
