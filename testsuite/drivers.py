@@ -149,7 +149,7 @@ import e3.fs as fs
 
 # Build the library
 subprocess.check_call([
-    'gprbuild', '-XLIBRARY_TYPE=relocatable', '-Pgen'
+    'gprbuild', '-XLIBRARY_TYPE=relocatable', '-XBUILD_MODE=dev', '-Pgen', '-v'
 ])
 
 # Rename libgen so that it's named according to python native modules
