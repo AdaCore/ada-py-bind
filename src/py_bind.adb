@@ -1,4 +1,4 @@
-with Ada.Text_IO; use Ada.Text_IO;
+with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 
 package body Py_Bind is
 
@@ -165,10 +165,21 @@ package body Py_Bind is
          Index_Error (Exception_Message (E));
       elsif E_Id = Python_Type_Error'Identity then
          Type_Error (Exception_Message (E));
+      elsif E_Id = Python_Bubble_Up'Identity then
+         --  In that case, we just raised to interrupt the Ada control flow and
+         --  raise the current python error. Do nothing.
+         null;
       else
-         Reraise_Occurrence (E);
+         --  In the rest of cases, we had an unexpected Ada exception.
+         --  Transform it into a Python exception.
+         Runtime_Error
+           ("Native Ada exception: "
+            & ASCII.LF
+            & Exception_Message (E)
+            & ASCII.LF
+            & "Traceback: "
+            & Symbolic_Traceback (E));
       end if;
-
       return null;
    end Handle_Error;
 
