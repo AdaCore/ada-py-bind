@@ -17,11 +17,7 @@ package body Py_Bind.Py_Functions is
         (Dummy : PyObject; Args : PyObject; KwArgs : PyObject) return PyObject
       is
       begin
-         declare
-            PA : constant Py_Args := Create (Args, KwArgs, Profile);
-         begin
-            return Func (PA);
-         end;
+         return Func (Create (Args, KwArgs, Profile));
       exception
          when E : others => return Handle_Error (E);
       end Raw_Method;
@@ -53,11 +49,7 @@ package body Py_Bind.Py_Functions is
         (Dummy : PyObject; Args : PyObject; KwArgs : PyObject) return PyObject
       is
       begin
-         declare
-            PA : constant Py_Args := Create (Args, KwArgs, Profile);
-         begin
-            return Func (PA);
-         end;
+         return Func (Create (Args, KwArgs, Profile));
       exception
          when E : others => return Handle_Error (E);
       end Raw_Method;
