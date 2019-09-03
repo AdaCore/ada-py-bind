@@ -40,6 +40,17 @@ package body Py_Bind.Types is
       return PyInt_Type'Unrestricted_Access;
    end Py_Int_Type;
 
+   -------------------
+   -- Py_Float_Type --
+   -------------------
+
+   function Py_Float_Type return PyObject is
+      PyFloat_Type : aliased Dummy;
+      pragma Import (C, PyFloat_Type, "PyFloat_Type");
+   begin
+      return PyFloat_Type'Unrestricted_Access;
+   end Py_Float_Type;
+
    ---------------
    -- To_Python --
    ---------------
@@ -65,9 +76,33 @@ package body Py_Bind.Types is
    is
      (Py_Object'(Py_Data => PyInt_FromLong (long (Self))));
 
+   ------------
+   -- To_Ada --
+   ------------
+
    function To_Ada (Dummy : PyObject) return Unit_Type is (null record);
+
+   ------------
+   -- To_Ada --
+   ------------
 
    function To_Ada (Self : PyObject) return Integer
    is (Integer (PyInt_AsLong (Self)));
+
+   ------------
+   -- To_Ada --
+   ------------
+
+   function To_Ada (Self : PyObject) return Float
+   is
+     (Float (PyFloat_AsDouble (Self)));
+
+   ---------------
+   -- To_Python --
+   ---------------
+
+   function To_Python (Self : Float) return Py_Object'Class
+   is
+     (Py_Object'(Py_Data => PyFloat_FromDouble (Interfaces.C.double (Self))));
 
 end Py_Bind.Types;

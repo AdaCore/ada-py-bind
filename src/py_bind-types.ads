@@ -22,6 +22,9 @@ package Py_Bind.Types is
    function Py_Int_Type return PyObject;
    --  Return Python's int type
 
+   function Py_Float_Type return PyObject;
+   --  Return Python's int type
+
    type Unit_Type is null record;
    --  Type representing the absence of type
 
@@ -35,6 +38,7 @@ package Py_Bind.Types is
    function To_Ada (Dummy : PyObject) return Unit_Type;
    function To_Ada (Self : PyObject) return String;
    function To_Ada (Self : PyObject) return Integer;
+   function To_Ada (Self : PyObject) return Float;
 
    -----------------------------------------
    --  Ada -> Python Conversion functions --
@@ -46,6 +50,7 @@ package Py_Bind.Types is
    function To_Python (Dummy : Unit_Type) return Py_Object'Class;
    function To_Python (Self : String) return Py_Object'Class;
    function To_Python (Self : Integer) return Py_Object'Class;
+   function To_Python (Self : Float) return Py_Object'Class;
 
    -----------------------------
    -- Standard types bindings --
@@ -62,5 +67,7 @@ package Py_Bind.Types is
      (String, Py_String_Type);
 
    package Int_Type is new Py_Bind.Py_Type_Descriptor (Integer, Py_Int_Type);
+
+   package Float_Type is new Py_Bind.Py_Type_Descriptor (Float, Py_Float_Type);
 
 end Py_Bind.Types;
