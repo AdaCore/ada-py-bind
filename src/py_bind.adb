@@ -253,12 +253,23 @@ package body Py_Bind is
 
             --  If an argument has been matched but is of the wrong type, raise
             --  an error.
-            if not PyObject_IsInstance (M_Arg, Spec.Py_Type) then
-               raise Python_Type_Error with
-                 "Wrong type for argument " & To_String (Spec.Name)
-                 & ": expected " & Image (Spec.Py_Type)
-                 & ", got " & Image (GetTypeObject (M_Arg));
-            end if;
+            declare
+               Res : constant Boolean :=
+                 PyObject_IsInstance (M_Arg, Spec.Py_Type);
+            begin
+               --  PyObject_IsInstance can set an error if the Py_Type is
+               --  invalid. In that case, raise immediately.
+               if PyErr_Occurred /= null then
+                  raise Python_Bubble_Up;
+               end if;
+
+               if not Res then
+                  raise Python_Type_Error with
+                    "Wrong type for argument " & To_String (Spec.Name)
+                    & ": expected " & Image (Spec.Py_Type)
+                    & ", got " & Image (GetTypeObject (M_Arg));
+               end if;
+            end;
          end;
       end loop;
 
