@@ -18,7 +18,6 @@ package body Py_Bind.Types is
          return PyString_AsString (Self);
       else
          Type_Error ("Expected string, got " & Image (Self));
-         raise Python_Type_Error;
       end if;
    end To_Ada;
 

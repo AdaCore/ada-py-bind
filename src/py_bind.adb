@@ -2,6 +2,16 @@ with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 
 package body Py_Bind is
 
+   Python_Type_Error    : exception;
+   Python_Bounds_Error  : exception;
+   Python_Runtime_Error : exception;
+   --  Internal exception types. Used by *_Error procedures, and by
+   --  ``Handle_Error``.
+
+   Python_Error_Message : Unbounded_String;
+   --  Global python error message. Used to work around the fact that Ada's
+   --  exception messages are 256 chars max.
+
    function Get_Item (Dict : PyObject; Key : String) return PyObject;
 
    function Stripped_Image (Self : Integer) return String;
@@ -48,10 +58,9 @@ package body Py_Bind is
    ----------------
 
    procedure Type_Error (Msg : String) is
-      PyExc_TypeError : PyObject;
-      pragma Import (C, PyExc_TypeError, "PyExc_TypeError");
    begin
-      PyErr_SetString (PyExc_TypeError, Msg);
+      Python_Error_Message := To_Unbounded_String (Msg);
+      raise Python_Type_Error;
    end Type_Error;
 
    -------------------
@@ -59,10 +68,9 @@ package body Py_Bind is
    -------------------
 
    procedure Runtime_Error (Msg : String) is
-      PyExc_RuntimeError : PyObject;
-      pragma Import (C, PyExc_RuntimeError, "PyExc_RuntimeError");
    begin
-      PyErr_SetString (PyExc_RuntimeError, Msg);
+      Python_Error_Message := To_Unbounded_String (Msg);
+      raise Python_Runtime_Error;
    end Runtime_Error;
 
    -----------------
@@ -70,10 +78,9 @@ package body Py_Bind is
    -----------------
 
    procedure Index_Error (Msg : String) is
-      PyExc_TypeError : PyObject;
-      pragma Import (C, PyExc_TypeError, "PyExc_IndexError");
    begin
-      PyErr_SetString (PyExc_TypeError, Msg);
+      Python_Error_Message := To_Unbounded_String (Msg);
+      raise Python_Bounds_Error;
    end Index_Error;
 
    ------------
@@ -160,11 +167,12 @@ package body Py_Bind is
 
    function Handle_Error (E : Exception_Occurrence) return PyObject is
       E_Id : constant Exception_Id := Exception_Identity (E);
+      Err_Msg : constant String := To_String (Python_Error_Message);
    begin
       if E_Id = Python_Bounds_Error'Identity then
-         Index_Error (Exception_Message (E));
+         Set_Error (Py_Index_Error, Err_Msg);
       elsif E_Id = Python_Type_Error'Identity then
-         Type_Error (Exception_Message (E));
+         Set_Error (Py_Type_Error, Err_Msg);
       elsif E_Id = Python_Bubble_Up'Identity then
          --  In that case, we just raised to interrupt the Ada control flow and
          --  raise the current python error. Do nothing.
@@ -172,8 +180,9 @@ package body Py_Bind is
       else
          --  In the rest of cases, we had an unexpected Ada exception.
          --  Transform it into a Python exception.
-         Runtime_Error
-           ("Native Ada exception: "
+         Set_Error
+           (Py_Runtime_Error,
+            "Native Ada exception: "
             & ASCII.LF
             & Exception_Message (E)
             & ASCII.LF
@@ -213,17 +222,17 @@ package body Py_Bind is
 
       --  Check number of arguments
       if Nb_Args > Max_Args (Args_Spec) then
-         raise Python_Type_Error
-           with "Too many arguments. Expected max "
-           & Stripped_Image (Max_Args (Args_Spec))
-           & ", got " & Stripped_Image (Positive (Nb_Args));
+         Type_Error
+           ("Too many arguments. Expected max "
+            & Stripped_Image (Max_Args (Args_Spec))
+            & ", got " & Stripped_Image (Positive (Nb_Args)));
       end if;
 
       if Nb_Args > Max_Args (Args_Spec) then
-         raise Python_Type_Error
-           with "Too few arguments. Expected at least "
-           & Stripped_Image (Min_Args (Args_Spec))
-           & ", got " & Stripped_Image (Nb_Args);
+         Type_Error
+           ("Too few arguments. Expected at least "
+            & Stripped_Image (Min_Args (Args_Spec))
+            & ", got " & Stripped_Image (Nb_Args));
       end if;
 
       --  Match arguments
@@ -247,8 +256,8 @@ package body Py_Bind is
             --  If any mandatory argument hasn't been matched, then raise an
             --  error.
             if M_Arg = Py_None and then not Spec.Is_Kw then
-               raise Python_Type_Error with
-                 "Missing argument " & To_String (Spec.Name);
+               Type_Error
+                 ("Missing argument " & To_String (Spec.Name));
             end if;
 
             --  If an argument has been matched but is of the wrong type, raise
@@ -264,10 +273,10 @@ package body Py_Bind is
                end if;
 
                if not Res then
-                  raise Python_Type_Error with
-                    "Wrong type for argument " & To_String (Spec.Name)
-                    & ": expected " & Image (Spec.Py_Type)
-                    & ", got " & Image (GetTypeObject (M_Arg));
+                  Type_Error
+                    ("Wrong type for argument " & To_String (Spec.Name)
+                     & ": expected " & Image (Spec.Py_Type)
+                     & ", got " & Image (GetTypeObject (M_Arg)));
                end if;
             end;
          end;
@@ -283,8 +292,8 @@ package body Py_Bind is
                PyDict_Next (KwArgs, Pos, Key, Val);
                if not Args_Spec.Valid_Kws.Contains (PyString_AsString (Key))
                then
-                  raise Python_Type_Error with
-                    "Unexpected kw argument: " & PyString_AsString (Key);
+                  Type_Error
+                    ("Unexpected kw argument: " & PyString_AsString (Key));
                end if;
                exit when Pos = -1;
             end loop;

@@ -45,18 +45,28 @@ package Py_Bind is
    function Image (Obj : PyObject) return String;
    --  Utility function to print a PyObject
 
-   Python_Type_Error    : exception;
-   Python_Bounds_Error  : exception;
-   Python_Bubble_Up     : exception;
+   Py_Type_Error : constant PyObject;
+   Py_Runtime_Error : constant PyObject;
+   Py_Index_Error : constant PyObject;
+   --  Python built-in exception objects. Meant to be used along with
+   --  ``Set_Error``.
 
-   procedure Runtime_Error (Msg : String);
+   procedure Set_Error
+     (Error : PyObject; Msg : String) renames PyErr_SetString;
+   --  Set the current python error to ``Error``, with message ``Msg``.
+
+   procedure Runtime_Error (Msg : String) with No_Return;
    --  Raise a python runtime error with the given message.
 
-   procedure Type_Error (Msg : String);
+   procedure Type_Error (Msg : String) with No_Return;
    --  Raise a python type error with the given message.
 
-   procedure Index_Error (Msg : String);
+   procedure Index_Error (Msg : String) with No_Return;
    --  Raise a python index error with the given message.
+
+   Python_Bubble_Up : exception;
+   --  Raise this exception if you want to exit and bubble up the current
+   --  python error.
 
    function Handle_Error (E : Exception_Occurrence) return PyObject;
 
@@ -128,5 +138,10 @@ package Py_Bind is
    function Get_Item (Args : Py_Args; Index : Positive) return PyObject;
 
    overriding procedure Destroy (Self : in out Py_Args);
+
+private
+   pragma Import (C, Py_Type_Error, "PyExc_TypeError");
+   pragma Import (C, Py_Runtime_Error, "PyExc_RuntimeError");
+   pragma Import (C, Py_Index_Error, "PyExc_IndexError");
 
 end Py_Bind;

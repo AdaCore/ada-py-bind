@@ -31,6 +31,7 @@ package body Py_Bind.Py_Property is
          Prop    : PyObject;
          Dummy   : System.Address) return Integer
       is
+         Ignore : PyObject;
       begin
          declare
             Self : constant Self_Val.Access_Desc.Ada_T :=
@@ -41,7 +42,8 @@ package body Py_Bind.Py_Property is
             return 0;
          end;
       exception
-         when Python_Type_Error =>
+         when E : others =>
+            Ignore := Handle_Error (E);
             return 1;
       end Raw_Setter;
 
@@ -86,8 +88,8 @@ package body Py_Bind.Py_Property is
             return P.Py_Data;
          end;
       exception
-         when Python_Type_Error =>
-            return Py_None;
+         when E : others =>
+            return Handle_Error (E);
       end Raw_Getter;
 
       ----------------
@@ -99,6 +101,7 @@ package body Py_Bind.Py_Property is
          Prop    : PyObject;
          Dummy   : System.Address) return Integer
       is
+         Ignore : PyObject;
       begin
          --  We use a declare block to ensure that exception in To_Ada
          --  functions are caught.
@@ -111,7 +114,8 @@ package body Py_Bind.Py_Property is
             return 0;
          end;
       exception
-         when Python_Type_Error =>
+         when E : others =>
+            Ignore := Handle_Error (E);
             return 1;
       end Raw_Setter;
 
