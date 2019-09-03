@@ -16,8 +16,8 @@ package Py_Bind.Py_Value is
 
    overriding procedure Destroy (Self : in out T);
 
-   function To_Python_Unsafe (Self : Rec) return Py_Object'Class;
-   function To_Python_Unsafe (Self : Rec_Access) return Py_Object'Class;
+   function To_Python (Self : Rec) return Py_Object'Class;
+   function To_Python (Self : Rec_Access) return Py_Object'Class;
 
    function To_Ada (Self : PyObject) return Rec_Access;
    function To_Ada (Self : PyObject) return Rec;

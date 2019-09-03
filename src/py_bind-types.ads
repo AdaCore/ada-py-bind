@@ -1,5 +1,4 @@
 with Py_Bind.Py_Type_Descriptor;
-with Interfaces.C; use Interfaces.C;
 
 --  This package exposes:
 --
@@ -33,10 +32,9 @@ package Py_Bind.Types is
    --  Functions used to convert a Python type to an Ada type. Used in type
    --  descriptors instanciations below.
 
-   function To_Ada (Dummy : PyObject) return Unit_Type is (null record);
+   function To_Ada (Dummy : PyObject) return Unit_Type;
    function To_Ada (Self : PyObject) return String;
-   function To_Ada (Self : PyObject) return Integer
-   is (Integer (PyInt_AsLong (Self)));
+   function To_Ada (Self : PyObject) return Integer;
 
    -----------------------------------------
    --  Ada -> Python Conversion functions --
@@ -45,18 +43,9 @@ package Py_Bind.Types is
    --  Functions used to convert an Ada type to a python type. Used in type
    --  descriptors instanciations below.
 
-   function To_Python_Unsafe (Dummy : Unit_Type) return Py_Object'Class
-   is (Py_Object'(Py_Data => Py_None));
-
-   function To_Python_Unsafe
-     (Self : String) return Py_Object'Class
-   is
-     (Py_Object'(Py_Data => PyString_FromString (Self)));
-
-   function To_Python_Unsafe
-     (Self : Integer) return Py_Object'Class
-   is
-     (Py_Object'(Py_Data => PyInt_FromLong (long (Self))));
+   function To_Python (Dummy : Unit_Type) return Py_Object'Class;
+   function To_Python (Self : String) return Py_Object'Class;
+   function To_Python (Self : Integer) return Py_Object'Class;
 
    -----------------------------
    -- Standard types bindings --

@@ -62,19 +62,19 @@ package body Py_Bind.Py_Value is
    -- To_Python --
    ---------------
 
-   function To_Python_Unsafe (Self : Rec_Access) return Py_Object'Class is
+   function To_Python (Self : Rec_Access) return Py_Object'Class is
    begin
       return To_Python (Self, False);
-   end To_Python_Unsafe;
+   end To_Python;
 
    ---------------
    -- To_Python --
    ---------------
 
-   function To_Python_Unsafe (Self : Rec) return Py_Object'Class is
+   function To_Python (Self : Rec) return Py_Object'Class is
    begin
       return To_Python (new Rec'(Self), True);
-   end To_Python_Unsafe;
+   end To_Python;
 
    ---------------
    -- To_Python --

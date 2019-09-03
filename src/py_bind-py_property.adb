@@ -16,7 +16,7 @@ package body Py_Bind.Py_Property is
             Self : constant Self_Val.Access_Desc.Ada_T :=
               Self_Val.Access_Desc.P_To_Ada (Obj);
             P    : constant Py_Object'Class :=
-              Val_Desc.To_Python_Unsafe (Getter (Self.all));
+              Val_Desc.To_Python (Getter (Self.all));
          begin
             return P.Py_Data;
          end;
@@ -81,7 +81,7 @@ package body Py_Bind.Py_Property is
             Self : constant Self_Val.Access_Desc.Ada_T :=
               Self_Val.Access_Desc.P_To_Ada (Obj);
             P    : constant Py_Object'Class :=
-              Val_Desc.To_Python_Unsafe (Getter (Self));
+              Val_Desc.To_Python (Getter (Self));
          begin
             return P.Py_Data;
          end;

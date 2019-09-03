@@ -21,15 +21,15 @@ package body Py_Bind.Py_Type_Descriptor is
          raise;
    end Get_Arg;
 
-   ---------------
-   -- To_Python --
-   ---------------
+   -----------------
+   -- P_To_Python --
+   -----------------
 
-   function To_Python (Self : Ada_T) return Py_Object_Ref is
+   function P_To_Python (Self : Ada_T) return Py_Object_Ref is
       Ret : Py_Object_Ref;
    begin
-      Py_Object_Smart_Ptr.Set (Ret, To_Python_Unsafe (Self));
+      Py_Object_Smart_Ptr.Set (Ret, P_To_Python_Unsafe (Self));
       return Ret;
-   end To_Python;
+   end P_To_Python;
 
 end Py_Bind.Py_Type_Descriptor;
