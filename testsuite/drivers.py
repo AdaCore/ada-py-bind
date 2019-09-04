@@ -68,7 +68,8 @@ class BaseDriver(BasicTestDriver):
                                      timeout))
         self.timeout = timeout
 
-    def run_and_check(self, argv, for_debug=False, append_output=False):
+    def run_and_check(self, argv, for_debug=False, append_output=False,
+                      log_errors=True):
         """
         Run a subprocess with `argv` and check it completes with status code 0.
 
@@ -90,7 +91,8 @@ class BaseDriver(BasicTestDriver):
                 '{} returned status code {}\n'.format(program, p.status)
             )
             self.result.out += p.out
-            logging.error(p.out)
+            if log_errors:
+                logging.error(p.out)
             raise TestError(
                 '{} returned status code {}'.format(program, p.status)
             )
@@ -140,28 +142,22 @@ class DefaultDriver(BaseDriver):
             end Gen;
             '''.format(P.abspath(self.test_dir())))
 
-        with open(self.working_dir('gen.py'), 'w') as f:
-            f.write('''
-import os.path as P
-import subprocess
-
-import e3.fs as fs
-
-# Build the library
-subprocess.check_call([
-    'gprbuild', '-XLIBRARY_TYPE=relocatable', '-XBUILD_MODE=dev', '-Pgen', '-v'
-])
-
-# Rename libgen so that it's named according to python native modules
-# conventions.
-fs.mv(P.join('test', 'libgen.so'), P.join('test', 'gen.so'))
-            ''')
+        # Copy build_lib.py to working directory
+        fs.cp(P.join(P.dirname(P.abspath(__file__)), "build_lib.py"),
+              self.working_dir('build_lib.py'))
 
     @catch_test_errors
     def run(self, prev):
         fs.mkdir(self.working_dir('test'))
         fs.cp(self.test_dir('test.py'), self.working_dir('test', 'test.py'))
-        self.run_and_check([sys.executable, 'gen.py'])
+
+        # Try to build, but don't log errors in the build, and recover from
+        # TestError: We want to be able to test compilation errors too.
+        try:
+            self.run_and_check([sys.executable, 'build_lib.py'],
+                               log_errors=False)
+        except TestError:
+            return
 
         environ['PYTHONPATH'] = P.pathsep.join(
             keep([environ.get('PYTHONPATH'), self.working_dir('test')])
