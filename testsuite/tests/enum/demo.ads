@@ -12,8 +12,6 @@ with Py_Bind.Py_Functions;
 pragma Warnings (Off, "unrecognized pragma ""Py_Bind");
 
 package Demo is
-   pragma Suppress (Access_Check);
-
    type Point is record
       X, Y : Integer := 12;
    end record;

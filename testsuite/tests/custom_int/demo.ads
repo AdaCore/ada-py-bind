@@ -12,8 +12,6 @@ with Py_Bind.Py_Functions;
 pragma Warnings (Off, "unrecognized pragma ""Py_Bind");
 
 package Demo is
-   pragma Suppress (Access_Check);
-
    type Point_Coord is range -1000 .. 1000;
 
    package Point_Coord_Binding is new Simple_Discrete_Binding (Point_Coord);
