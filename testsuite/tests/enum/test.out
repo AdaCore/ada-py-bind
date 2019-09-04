@@ -1,0 +1,5 @@
+SQUARE
+CIRCLE
+Wrong value for enum: "lol".
+  Possible values: "SQUARE", "CIRCLE", "RECTANGLE"
+CIRCLE
