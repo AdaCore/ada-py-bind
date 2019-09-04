@@ -104,4 +104,39 @@ package body Py_Bind.Types is
    is
      (Py_Object'(Py_Data => PyFloat_FromDouble (Interfaces.C.double (Self))));
 
+   -------------------------
+   -- Simple_Enum_Binding --
+   -------------------------
+
+   package body Simple_Enum_Binding is
+
+      function To_Python (Self : T) return Py_Object'Class is
+        (Py_Object'
+           (Py_Data => PyString_FromString (T'Image (Self))));
+
+      function All_Values (Current : T := T'First) return String is
+        ("""" & T'Image (Current) & """" &
+         (if Current /= T'Last
+          then ", " & All_Values (T'Succ (Current))
+          else ""));
+
+      function To_Ada (Self : PyObject) return T
+      is
+         Str : constant String := PyString_AsString (Self);
+      begin
+         begin
+            return (T'Value (Str));
+         exception
+            when Constraint_Error =>
+               Type_Error
+                 ("Wrong value for enum: """ & Str & """"
+                  & (if T'Pos (T'Last) - T'Pos (T'First) > 100
+                    then ""
+                    else
+                       "." & ASCII.LF & "  Possible values: " & All_Values));
+         end;
+      end To_Ada;
+
+   end Simple_Enum_Binding;
+
 end Py_Bind.Types;

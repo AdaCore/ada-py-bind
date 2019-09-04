@@ -1,3 +1,5 @@
+with System.Aux_DEC; use System.Aux_DEC;
+
 with Py_Bind.Py_Type_Descriptor;
 
 --  This package exposes:
@@ -58,7 +60,7 @@ package Py_Bind.Types is
 
    --  Set of type descriptors meant to be used to bind Ada to Python. You can
    --  pass the type descriptor directly when one is needed as a parameter, or
-   --  use the functions
+   --  use the functions.
 
    package No_Type is new Py_Bind.Py_Type_Descriptor
      (Unit_Type, Py_No_Type);
@@ -69,5 +71,30 @@ package Py_Bind.Types is
    package Int_Type is new Py_Bind.Py_Type_Descriptor (Integer, Py_Int_Type);
 
    package Float_Type is new Py_Bind.Py_Type_Descriptor (Float, Py_Float_Type);
+
+   -------------------------------------------
+   -- Generic type descriptors constructors --
+   -------------------------------------------
+
+   generic
+      type T is (<>);
+      --  Enum type to bind.
+   package Simple_Enum_Binding is
+
+      pragma Compile_Time_Error
+        (T'Type_Class /= Type_Class_Enumeration,
+         "T has to be an enumeration type");
+      --  Check that the type passed as parameter is an enum. Emit a compile
+      --  error if not.
+
+      function To_Python (Self : T) return Py_Object'Class;
+      function To_Ada (Self : PyObject) return T;
+
+      package Type_Desc is new Py_Bind.Py_Type_Descriptor (T, Py_String_Type);
+   end Simple_Enum_Binding;
+   --  Create a type descriptor to do a simple Ada enum <-> Python string
+   --  binding. This is most useful for lightweight binding of enum fields,
+   --  where you don't want to create a dedicated python type for the enum
+   --  type.
 
 end Py_Bind.Types;
