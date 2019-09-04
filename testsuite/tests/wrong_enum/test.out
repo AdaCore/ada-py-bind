@@ -1,0 +1,5 @@
+/home/amiard/libadalang/install/libadalang_env/bin/python returned status code 1
+demo.ads:71:04: instantiation error at py_bind-types.ads:100
+demo.ads:71:04: T has to be an enumeration type
+gprbuild: *** compilation phase failed
+
