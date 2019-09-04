@@ -104,6 +104,21 @@ package body Py_Bind.Types is
    is
      (Py_Object'(Py_Data => PyFloat_FromDouble (Interfaces.C.double (Self))));
 
+   -----------------------------
+   -- Simple_Discrete_Binding --
+   -----------------------------
+
+   package body Simple_Discrete_Binding is
+
+      function To_Python (Self : T) return Py_Object'Class is
+        (Py_Object'
+           (Py_Data => PyInt_FromLong (Interfaces.C.long (T'Pos (Self)))));
+
+      function To_Ada (Self : PyObject) return T
+      is (T'Val (PyInt_AsLong (Self)));
+
+   end Simple_Discrete_Binding;
+
    -------------------------
    -- Simple_Enum_Binding --
    -------------------------

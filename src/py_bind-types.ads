@@ -78,6 +78,18 @@ package Py_Bind.Types is
 
    generic
       type T is (<>);
+   package Simple_Discrete_Binding is
+      function To_Python (Self : T) return Py_Object'Class;
+      function To_Ada (Self : PyObject) return T;
+
+      package Type_Desc is new Py_Bind.Py_Type_Descriptor (T, Py_Int_Type);
+   end Simple_Discrete_Binding;
+   --  Create a type descriptor to do a simple Ada discrete type binding. This
+   --  is useful for any discrete type that is not handled by the predefined
+   --  type descriptors above.
+
+   generic
+      type T is (<>);
       --  Enum type to bind.
    package Simple_Enum_Binding is
 
