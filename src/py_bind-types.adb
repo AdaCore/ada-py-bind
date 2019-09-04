@@ -154,4 +154,18 @@ package body Py_Bind.Types is
 
    end Simple_Enum_Binding;
 
+   -------------------------
+   -- Simple_Real_Binding --
+   -------------------------
+
+   package body Simple_Real_Binding is
+      function To_Python (Self : T) return Py_Object'Class is
+        (Py_Object'
+           (Py_Data => PyFloat_FromDouble
+                (Interfaces.C.double (Self))));
+
+      function To_Ada (Self : PyObject) return T
+      is (T (PyFloat_AsDouble (Self)));
+   end Simple_Real_Binding;
+
 end Py_Bind.Types;

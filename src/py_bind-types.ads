@@ -76,6 +76,12 @@ package Py_Bind.Types is
    -- Generic type descriptors constructors --
    -------------------------------------------
 
+   --  Set of generic type descriptor constructors. Useful if you want to:
+   --
+   --  - Bind non standard discrete/scalar types.
+   --
+   --  - Do lightweight bindings of enum types.
+
    generic
       type T is (<>);
    package Simple_Discrete_Binding is
@@ -108,5 +114,17 @@ package Py_Bind.Types is
    --  binding. This is most useful for lightweight binding of enum fields,
    --  where you don't want to create a dedicated python type for the enum
    --  type.
+
+   generic
+      type T is digits <>;
+   package Simple_Real_Binding is
+      function To_Python (Self : T) return Py_Object'Class;
+      function To_Ada (Self : PyObject) return T;
+
+      package Type_Desc is new Py_Bind.Py_Type_Descriptor (T, Py_Float_Type);
+   end Simple_Real_Binding;
+   --  Create a type descriptor to do a simple Ada floating point type binding.
+   --  This is useful for any discrete type that is not handled by the
+   --  predefined type descriptors above.
 
 end Py_Bind.Types;
