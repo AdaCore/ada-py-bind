@@ -38,4 +38,4 @@ class AdaPyBindTestsuite(Testsuite):
 
 
 if __name__ == '__main__':
-    AdaPyBindTestsuite(os.path.dirname(__file__)).testsuite_main(dev_mode=True)
+    AdaPyBindTestsuite(os.path.dirname(__file__)).testsuite_main()
