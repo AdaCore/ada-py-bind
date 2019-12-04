@@ -22,6 +22,7 @@
 ------------------------------------------------------------------------------
 
 with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
+with Py_Bind.Types;           use Py_Bind.Types;
 
 package body Py_Bind is
 
@@ -299,7 +300,7 @@ package body Py_Bind is
                   Type_Error
                     ("Wrong type for argument " & To_String (Spec.Name)
                      & ": expected " & Image (Spec.Py_Type)
-                     & ", got " & Image (GetTypeObject (M_Arg)));
+                     & ", got " & Image (To_PyObject (GetTypeObject (M_Arg))));
                end if;
             end;
          end;

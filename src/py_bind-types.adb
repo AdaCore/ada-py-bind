@@ -22,6 +22,7 @@
 ------------------------------------------------------------------------------
 
 with Interfaces.C; use Interfaces.C;
+with Ada.Unchecked_Conversion;
 
 package body Py_Bind.Types is
    PyString_Type : aliased Dummy;
@@ -190,5 +191,16 @@ package body Py_Bind.Types is
       function To_Ada (Self : PyObject) return T
       is (T (PyFloat_AsDouble (Self)));
    end Simple_Real_Binding;
+
+   -----------------
+   -- To_PyObject --
+   -----------------
+
+   function To_PyObject (Typ : PyTypeObject) return PyObject is
+      function Convert
+      is new Ada.Unchecked_Conversion (PyTypeObject, PyObject);
+   begin
+      return Convert (Typ);
+   end To_PyObject;
 
 end Py_Bind.Types;
