@@ -1,6 +1,6 @@
 0.52
 -0.52
 Native Ada exception: 
-py_bind-types.adb:168 range check failed
+py_bind-types.adb:192 range check failed
 Traceback: 
 0.52
