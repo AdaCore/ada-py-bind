@@ -53,6 +53,10 @@ package Py_Bind.Types is
    type Unit_Type is null record;
    --  Type representing the absence of type
 
+   function To_PyObject (Typ : PyTypeObject) return PyObject;
+   --  Conversion function, meant to work around the fact that in old versions
+   --  of GNATCOLL.Python, PyTypeObject is not a subtype of PyObject.
+
    -----------------------------------------
    --  Ada -> Python Conversion functions --
    -----------------------------------------
