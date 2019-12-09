@@ -197,6 +197,8 @@ package body Py_Bind is
          Set_Error (Py_Index_Error, Err_Msg);
       elsif E_Id = Python_Type_Error'Identity then
          Set_Error (Py_Type_Error, Err_Msg);
+      elsif E_Id = Python_Runtime_Error'Identity then
+         Set_Error (Py_Runtime_Error, Err_Msg);
       elsif E_Id = Python_Bubble_Up'Identity then
          --  In that case, we just raised to interrupt the Ada control flow and
          --  raise the current python error. Do nothing.
