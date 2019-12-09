@@ -56,6 +56,8 @@ package body Py_Bind.Py_Property is
       is
          Ignore : PyObject;
       begin
+         Type_Check (Prop, Val_Desc.Py_Type, "property " & Property_Name);
+
          declare
             Self : constant Self_Val.Access_Desc.Ada_T :=
               Self_Val.Access_Desc.P_To_Ada (Obj);
@@ -126,6 +128,9 @@ package body Py_Bind.Py_Property is
       is
          Ignore : PyObject;
       begin
+
+         Type_Check (Prop, Val_Desc.Py_Type, "property " & Property_Name);
+
          --  We use a declare block to ensure that exception in To_Ada
          --  functions are caught.
          declare

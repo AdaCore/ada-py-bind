@@ -196,6 +196,13 @@ private
       Matched_Args : PyObject_Array (1 .. Nb_Args);
    end record;
 
+   procedure Type_Check
+     (Val, Expected_Type : PyObject;
+      Target_Desc        : String);
+   --  Helper to type check a value against a python type. ``Target_Desc`` that
+   --  is used in the error message to describe the target. For example, for a
+   --  method argument named "A", it might be "argument A".
+
    overriding procedure Destroy (Self : in out Py_Args);
 
    pragma Import (C, Py_Type_Error, "PyExc_TypeError");

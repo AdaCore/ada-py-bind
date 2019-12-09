@@ -1,0 +1,2 @@
+Wrong type for property x: expected <type 'int'>, got <type 'float'>
+Wrong type for property x: expected <type 'int'>, got <type 'str'>
