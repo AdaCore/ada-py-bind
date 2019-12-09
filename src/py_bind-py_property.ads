@@ -25,13 +25,24 @@ with Py_Bind.Py_Type_Descriptor;
 with Py_Bind.Py_Value;
 with System;
 
+--  Container package to generate properties for a given Python bound type,
+--  represented by ``Self_Val``.
+
 generic
    with package Self_Val is new Py_Bind.Py_Value (<>);
+   --  Type for ``self``, for generated properties.
 package Py_Bind.Py_Property is
+
+   --  Bind a property, given a value descriptor, a getter and a setter. Using
+   --  this package, the getter and the setter will take ``self`` by value.
 
    generic
       with package Val_Desc is new Py_Bind.Py_Type_Descriptor (<>);
+      --  Type descriptor for the value of the property.
+
       Property_Name : String;
+      --  Name of the resulting property.
+
       with function Getter
         (Self : Self_Val.Val_Desc.Ada_T) return Val_Desc.Ada_Type;
       with procedure Setter (Self : in out Self_Val.Val_Desc.Ada_T;
@@ -48,13 +59,25 @@ package Py_Bind.Py_Property is
         with Convention => C;
    end Byval;
 
+   --  Bind a property, given a value descriptor, a getter and a setter. Using
+   --  this package, the getter and the setter will take ``self`` by reference
+   --  (access type). Technically only the setter really needs this, but for
+   --  consistency, it applies to both getter and setter.
+
    generic
       with package Val_Desc is new Py_Bind.Py_Type_Descriptor (<>);
+      --  Type descriptor for the value of the property.
+
       Property_Name : String;
+      --  Name of the resulting property.
+
       with function Getter
         (Self : Self_Val.Access_Desc.Ada_T) return Val_Desc.Ada_Type;
+      --  Getter function for the property.
+
       with procedure Setter (Self : Self_Val.Access_Desc.Ada_T;
                              Val  : Val_Desc.Ada_Type);
+      --  Setter procedure for the property.
    package Byref is
       function Raw_Getter
         (Obj : PyObject; Dummy : System.Address) return PyObject
@@ -66,5 +89,22 @@ package Py_Bind.Py_Property is
          Dummy   : System.Address) return Integer
         with Convention => C;
    end Byref;
+
+   --  Bind a read-only property, given a value descriptor and a getter. The
+   --  getter passes ``self`` by value.
+
+   generic
+      with package Val_Desc is new Py_Bind.Py_Type_Descriptor (<>);
+      --  Type descriptor for the value of the property.
+
+      Property_Name : String;
+      --  Name of the resulting property.
+
+      with function Getter
+        (Self : Self_Val.Val_Desc.Ada_T) return Val_Desc.Ada_Type;
+      --  Getter function for the property.
+
+   package Read_Only is
+   end Read_Only;
 
 end Py_Bind.Py_Property;
