@@ -52,6 +52,58 @@ package Py_Bind is
 
    Me : Trace_Handle := Create ("Py_Bind", From_Config);
 
+   type Py_Arg_Spec is private;
+   --  Specification for the argument of a python function.
+
+   type Py_Arg_Spec_Array is array (Positive range <>) of Py_Arg_Spec;
+   No_Args : constant Py_Arg_Spec_Array;
+
+   function Arg_Spec
+     (Name    : String;
+      Py_Type : PyObject;
+      Is_Kw   : Boolean := False;
+      Doc     : String := "") return Py_Arg_Spec;
+   --  Constructor for a python arg spec.
+
+   type Py_Fn_Profile (Nb_Args : Natural) is private;
+   --  Profile for a python function, containing specification of all the
+   --  arguments.
+
+   function Create_Profile
+     (Args     : Py_Arg_Spec_Array;
+      Ret_Type : PyObject := null) return Py_Fn_Profile;
+   --  Create a fresh ``Py_Fn_Profile`` instance from an array of arg specs.
+
+   function Empty_Profile return Py_Fn_Profile
+   is (Create_Profile (No_Args));
+   --  Return an empty profile.
+
+   type Py_Args (Nb_Args : Natural) is tagged private;
+   --  Encapsulates the arguments passed to a function, along with the profile
+   --  of the function. This object is mainly used to check that the args
+   --  passed conform to the specification of the function.
+
+   function Create
+     (Args, KwArgs : PyObject;
+      Profile      : Py_Fn_Profile) return Py_Args;
+   --  Create a new ``Py_Args`` object, from a profile, and the arguments
+   --  passed to the function. Calling this constructor will check that the
+   --  actuals match the specification.
+
+   function Min_Args (Args : Py_Args) return Natural;
+   --  Return the minimum number of arguments for ``Args``.
+
+   function Max_Args (Args : Py_Args) return Natural;
+   --  Return the maximum number of arguments for ``Args``.
+
+   function Get_Item (Args : Py_Args; Index : Positive) return PyObject;
+   --  Return the item at position ``Index`` in ``Args``.
+
+   type Module_Descriptor is private;
+   --  Describes a Python module.
+
+private
+
    type Init_Fn is access procedure;
 
    package Init_Fn_Vectors is new Ada.Containers.Vectors (Positive, Init_Fn);
@@ -102,41 +154,37 @@ package Py_Bind is
 
    type Py_Arg_Spec is record
       Name    : Unbounded_String;
+      --  The name of this argument.
+
       Py_Type : PyObject;
+      --  The python type expected for this argument.
+
       Is_Kw   : Boolean := False;
+      --  Whether the argument is a keyword argument or not.
+
       Doc     : Unbounded_String := Null_Unbounded_String;
+      --  Documentation for this argument.
    end record;
+   --  Specification for the argument of a python function.
 
-   function Arg_Spec
-     (Name  : String; Py_Type : PyObject;
-      Is_Kw : Boolean := False; Doc : String := "") return Py_Arg_Spec
-   is
-     (Py_Arg_Spec'(To_Unbounded_String (Name), Py_Type, Is_Kw,
-                   To_Unbounded_String (Doc)));
-
-   type Py_Arg_Spec_Array is array (Positive range <>) of Py_Arg_Spec;
-   No_Args : Py_Arg_Spec_Array (1 .. 0) := (others => <>);
+   No_Args : constant Py_Arg_Spec_Array (1 .. 0) := (others => <>);
 
    type Py_Fn_Profile (Nb_Args : Natural) is record
       Args      : Py_Arg_Spec_Array (1 .. Nb_Args);
+      --  Arguments of the function.
+
       Ret_Type  : PyObject := null;
+      --  Return type for the function.
+
       Valid_Kws : Name_Sets.Set;
+      --  Set of valid keyword argument's names.
    end record;
-   --  Profile for a python function, containing specification of all the
-   --  arguments, as well as valid keyword arg values.
-
-   function Create_Profile
-     (Args     : Py_Arg_Spec_Array;
-      Ret_Type : PyObject := null) return Py_Fn_Profile;
-   --  Create a fresh ``Py_Fn_Profile`` instance from an array of arg specs
-
-   function Empty_Profile return Py_Fn_Profile
-   is (Create_Profile (No_Args));
 
    function Min_Args (Args : Py_Fn_Profile) return Natural;
-   --  Return the minimum number of arguments
+   --  Return the minimum number of arguments for this profile.
 
    function Max_Args (Args : Py_Fn_Profile) return Natural;
+   --  Return the maximum number of arguments for this profile.
 
    Empty_Args_Spec : Py_Fn_Profile (0) := (0, others => <>);
 
@@ -148,21 +196,8 @@ package Py_Bind is
       Matched_Args : PyObject_Array (1 .. Nb_Args);
    end record;
 
-   function Create
-     (Args, KwArgs : PyObject;
-      Args_Spec    : Py_Fn_Profile) return Py_Args;
-
-   function Min_Args (Args : Py_Args) return Natural
-   is (Min_Args (Args.Args_Spec.all));
-
-   function Max_Args (Args : Py_Args) return Natural
-   is (Max_Args (Args.Args_Spec.all));
-
-   function Get_Item (Args : Py_Args; Index : Positive) return PyObject;
-
    overriding procedure Destroy (Self : in out Py_Args);
 
-private
    pragma Import (C, Py_Type_Error, "PyExc_TypeError");
    pragma Import (C, Py_Runtime_Error, "PyExc_RuntimeError");
    pragma Import (C, Py_Index_Error, "PyExc_IndexError");
