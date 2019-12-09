@@ -21,6 +21,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package describes a Python type. While it could be instantiated
+--  directly by a client, most use cases are covered either by pre-bound types
+--  in ``Py_Bind.Py_Types``, either by helpers in the same package, such as
+--  ``Simple_Discrete_Binding``, ``Simple_Enum_Binding``, or finally, via
+--  ``Py_Bind.Py_Value`` for record types.
+--
+--  From the user's standpoint, this module is useful to access properties
+--  of a type, as well as helpers, when writing manual bindings for
+--  functions/properties.
+
 generic
    type Ada_Type (<>) is private;
 
@@ -30,6 +40,7 @@ generic
      (Self : Ada_Type) return Py_Object'Class is <>;
 
    with function To_Ada (Self : PyObject) return Ada_Type is <>;
+
 package Py_Bind.Py_Type_Descriptor is
 
    subtype Ada_T is Ada_Type;
@@ -43,4 +54,7 @@ package Py_Bind.Py_Type_Descriptor is
    function P_Py_Type return PyObject renames Py_Type;
 
    function Get_Arg (Args : Py_Args; Index : Positive) return Ada_Type;
+   --  Helper, given a ``Py_Args`` instance, will return the argument at
+   --  ``Index`` as ``Ada_Type``.
+
 end Py_Bind.Py_Type_Descriptor;
