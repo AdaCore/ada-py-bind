@@ -234,12 +234,12 @@ package body Py_Bind is
 
    function Create
      (Args, KwArgs : PyObject;
-      Args_Spec    : Py_Fn_Profile) return Py_Args
+      Profile    : Py_Fn_Profile) return Py_Args
    is
       Ret         : Py_Args :=
         Py_Args'
-          (Args_Spec.Nb_Args, Args, KwArgs,
-           Args_Spec'Unrestricted_Access,
+          (Profile.Nb_Args, Args, KwArgs,
+           Profile'Unrestricted_Access,
            (others => Py_None));
       Nb_Pos_Args : constant Natural := PyObject_Size (Args);
       Nb_Args     : constant Natural :=
@@ -247,17 +247,17 @@ package body Py_Bind is
    begin
 
       --  Check number of arguments
-      if Nb_Args > Max_Args (Args_Spec) then
+      if Nb_Args > Max_Args (Profile) then
          Type_Error
            ("Too many arguments. Expected max "
-            & Stripped_Image (Max_Args (Args_Spec))
+            & Stripped_Image (Max_Args (Profile))
             & ", got " & Stripped_Image (Positive (Nb_Args)));
       end if;
 
-      if Nb_Args > Max_Args (Args_Spec) then
+      if Nb_Args > Max_Args (Profile) then
          Type_Error
            ("Too few arguments. Expected at least "
-            & Stripped_Image (Min_Args (Args_Spec))
+            & Stripped_Image (Min_Args (Profile))
             & ", got " & Stripped_Image (Nb_Args));
       end if;
 
@@ -316,7 +316,7 @@ package body Py_Bind is
          begin
             loop
                PyDict_Next (KwArgs, Pos, Key, Val);
-               if not Args_Spec.Valid_Kws.Contains (PyString_AsString (Key))
+               if not Profile.Valid_Kws.Contains (PyString_AsString (Key))
                then
                   Type_Error
                     ("Unexpected kw argument: " & PyString_AsString (Key));
@@ -328,5 +328,32 @@ package body Py_Bind is
 
       return Ret;
    end Create;
+
+   --------------
+   -- Arg_Spec --
+   --------------
+
+   function Arg_Spec
+     (Name    : String;
+      Py_Type : PyObject;
+      Is_Kw   : Boolean := False;
+      Doc     : String := "") return Py_Arg_Spec
+   is
+     (Py_Arg_Spec'(To_Unbounded_String (Name), Py_Type, Is_Kw,
+                   To_Unbounded_String (Doc)));
+
+   --------------
+   -- Min_Args --
+   --------------
+
+   function Min_Args (Args : Py_Args) return Natural
+   is (Min_Args (Args.Args_Spec.all));
+
+   --------------
+   -- Max_Args --
+   --------------
+
+   function Max_Args (Args : Py_Args) return Natural
+   is (Max_Args (Args.Args_Spec.all));
 
 end Py_Bind;
