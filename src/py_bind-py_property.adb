@@ -161,4 +161,24 @@ package body Py_Bind.Py_Property is
       Init;
    end Byref;
 
+   package body Read_Only is
+
+      procedure Setter
+        (Self : in out Self_Val.Val_Desc.Ada_T; Val  : Val_Desc.Ada_Type);
+
+      ------------
+      -- Setter --
+      ------------
+
+      procedure Setter
+        (Self : in out Self_Val.Val_Desc.Ada_T; Val  : Val_Desc.Ada_Type)
+      is
+      begin
+         Runtime_Error ("Read only property");
+      end Setter;
+
+      package Dummy_Internal
+      is new ByVal (Val_Desc, Property_Name, Getter, Setter);
+   end Read_Only;
+
 end Py_Bind.Py_Property;
