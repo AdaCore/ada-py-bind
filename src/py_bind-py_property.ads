@@ -35,6 +35,9 @@ package Py_Bind.Py_Property is
 
    --  Bind a property, given a value descriptor, a getter and a setter. Using
    --  this package, the getter and the setter will take ``self`` by value.
+   --  PLEASE NOTE that this should really be only used for non composite
+   --  values due to Python semantics. Using it for a composite type will
+   --  make chained assignment non functional.
 
    generic
       with package Val_Desc is new Py_Bind.Py_Type_Descriptor (<>);
