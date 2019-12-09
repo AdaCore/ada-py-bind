@@ -25,13 +25,17 @@ with Py_Bind.Py_Type_Descriptor;
 with Py_Bind.Py_Module;
 
 generic
-   type Rec is private;
+   type Val is private;
+
    with package Module is new Py_Bind.Py_Module (<>);
+
    Name : String;
-   with procedure Destroy (Self : in out Rec) is null;
+
+   with procedure Destroy (Self : in out Val) is null;
+
 package Py_Bind.Py_Value is
 
-   type Rec_Access is access all Rec;
+   type Val_Access is access all Val;
 
    type T is new Py_Object with record
       Owns_Data : Boolean;
@@ -39,16 +43,16 @@ package Py_Bind.Py_Value is
 
    overriding procedure Destroy (Self : in out T);
 
-   function To_Python (Self : Rec) return Py_Object'Class;
-   function To_Python (Self : Rec_Access) return Py_Object'Class;
+   function To_Python (Self : Val) return Py_Object'Class;
+   function To_Python (Self : Val_Access) return Py_Object'Class;
 
-   function To_Ada (Self : PyObject) return Rec_Access;
-   function To_Ada (Self : PyObject) return Rec;
+   function To_Ada (Self : PyObject) return Val_Access;
+   function To_Ada (Self : PyObject) return Val;
 
    function Py_Type return PyObject;
 
-   package Access_Desc is new Py_Type_Descriptor (Rec_Access);
-   package Val_Desc is new Py_Type_Descriptor (Rec);
+   package Access_Desc is new Py_Type_Descriptor (Val_Access);
+   package Val_Desc is new Py_Type_Descriptor (Val);
 
    No_T : constant T := (Py_Object with False);
 

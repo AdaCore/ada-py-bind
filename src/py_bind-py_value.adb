@@ -33,11 +33,11 @@ package body Py_Bind.Py_Value is
    procedure Init;
    --  Initialization of the module. Called at elaboration
 
-   procedure Set_UD (Self : Rec_Access; Obj : PyObject);
+   procedure Set_UD (Self : Val_Access; Obj : PyObject);
    --  Put `Self` in `Obj` as a PyCapsule, in the `__userdata` field
 
    function To_Python
-     (Self              : Rec_Access;
+     (Self              : Val_Access;
       Owns_Ptr          : Boolean := True) return T;
    --  Constructor: Creates a python object from `Self`.
 
@@ -50,8 +50,8 @@ package body Py_Bind.Py_Value is
    --  Default destructor Python function.
 
    procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Rec,
-      Name   => Rec_Access);
+     (Object => Val,
+      Name   => Val_Access);
 
    Class   : PyObject;
 
@@ -61,7 +61,7 @@ package body Py_Bind.Py_Value is
    -- Set_UD --
    ------------
 
-   procedure Set_UD (Self : Rec_Access; Obj : PyObject) is
+   procedure Set_UD (Self : Val_Access; Obj : PyObject) is
       S : constant PyObject := PyCObject_FromVoidPtr (Self.all'Address);
    begin
       PyObject_SetAttrString (Obj, "__userdata", S);
@@ -72,7 +72,7 @@ package body Py_Bind.Py_Value is
    ----------
 
    overriding procedure Destroy (Self : in out T) is
-      R : Rec_Access := To_Ada (Self.Py_Data);
+      R : Val_Access := To_Ada (Self.Py_Data);
    begin
       Destroy (R.all);
       if Self.Owns_Data then
@@ -85,7 +85,7 @@ package body Py_Bind.Py_Value is
    -- To_Python --
    ---------------
 
-   function To_Python (Self : Rec_Access) return Py_Object'Class is
+   function To_Python (Self : Val_Access) return Py_Object'Class is
    begin
       return To_Python (Self, False);
    end To_Python;
@@ -94,16 +94,16 @@ package body Py_Bind.Py_Value is
    -- To_Python --
    ---------------
 
-   function To_Python (Self : Rec) return Py_Object'Class is
+   function To_Python (Self : Val) return Py_Object'Class is
    begin
-      return To_Python (new Rec'(Self), True);
+      return To_Python (new Val'(Self), True);
    end To_Python;
 
    ---------------
    -- To_Python --
    ---------------
 
-   function To_Python (Self : Rec_Access; Owns_Ptr : Boolean := True) return T
+   function To_Python (Self : Val_Access; Owns_Ptr : Boolean := True) return T
    is
       Obj  : PyObject;
       Args : PyObject;
@@ -179,7 +179,7 @@ package body Py_Bind.Py_Value is
    -- To_Ada --
    ------------
 
-   function To_Ada (Self : PyObject) return Rec_Access is
+   function To_Ada (Self : PyObject) return Val_Access is
       UD          : PyObject;
    begin
       if PyObject_HasAttrString (Self, "__userdata") then
@@ -189,7 +189,7 @@ package body Py_Bind.Py_Value is
 
          declare
             A : constant System.Address := PyCObject_AsVoidPtr (UD);
-            R : Rec_Access with Import;
+            R : Val_Access with Import;
             for R'Address use A'Address;
          begin
             return R;
@@ -202,7 +202,7 @@ package body Py_Bind.Py_Value is
    -- To_Ada --
    ------------
 
-   function To_Ada (Self : PyObject) return Rec is
+   function To_Ada (Self : PyObject) return Val is
    begin
       return To_Ada (Self).all;
    end To_Ada;
@@ -215,7 +215,7 @@ package body Py_Bind.Py_Value is
      (Data : PyObject; Args : PyObject) return PyObject
    is
       pragma Unreferenced (Data);
-      R : Rec_Access;
+      R : Val_Access;
       Self : PyObject;
 
    begin
@@ -235,7 +235,7 @@ package body Py_Bind.Py_Value is
          if Self /= null then
             R := To_Ada (Self);
             if R = null then
-               R := new Rec;
+               R := new Val;
                Set_UD (R, Self);
             end if;
          end if;

@@ -63,7 +63,7 @@ package body Demo is
    -- Get_Point --
    ---------------
 
-   function Get_Position (S : Py_Shape.Rec_Access) return Py_Point.Rec_Access
+   function Get_Position (S : Py_Shape.Val_Access) return Py_Point.Val_Access
    is
    begin
       return S.Position'Unrestricted_Access;
@@ -74,7 +74,7 @@ package body Demo is
    ---------------
 
    procedure Set_Position
-     (S : Py_Shape.Rec_Access; Point : Py_Point.Rec_Access)
+     (S : Py_Shape.Val_Access; Point : Py_Point.Val_Access)
    is
    begin
       S.Position := Point.all;
@@ -106,7 +106,7 @@ package body Demo is
    ------------------
 
    function Py_Translate (Args : Py_Args) return PyObject is
-      Self : constant Py_Shape.Rec_Access :=
+      Self : constant Py_Shape.Val_Access :=
         Py_Shape.Access_Desc.Get_Arg (Args, 1);
       P    : constant Point := Py_Point.Val_Desc.Get_Arg (Args, 2);
    begin

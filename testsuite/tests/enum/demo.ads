@@ -59,9 +59,9 @@ package Demo is
    package Py_Shape_Id_Prop is new Py_Shape_Prop.Byval
      (String_Type, "id", Get_Id, Set_Id);
 
-   function Get_Position (S : Py_Shape.Rec_Access) return Py_Point.Rec_Access;
+   function Get_Position (S : Py_Shape.Val_Access) return Py_Point.Val_Access;
    procedure Set_Position
-     (S : Py_Shape.Rec_Access; Point : Py_Point.Rec_Access);
+     (S : Py_Shape.Val_Access; Point : Py_Point.Val_Access);
 
    package Py_Shape_Position_Prop is new Py_Shape_Prop.Byref
      (Py_Point.Access_Desc, "position", Get_Position, Set_Position);
