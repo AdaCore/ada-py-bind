@@ -23,7 +23,7 @@
 
 package body Py_Bind.Py_Property is
 
-   package body Byval is
+   package body From_Descriptor is
 
       procedure Init;
 
@@ -90,9 +90,9 @@ package body Py_Bind.Py_Property is
 
    begin
       Init;
-   end Byval;
+   end From_Descriptor;
 
-   package body Byref is
+   package body From_Py_Value is
 
       procedure Init;
 
@@ -136,7 +136,8 @@ package body Py_Bind.Py_Property is
          declare
             Self : constant Self_Val.Access_Desc.Ada_T :=
               Self_Val.Access_Desc.P_To_Ada (Obj);
-            Val  : constant Val_Desc.Ada_Type := Val_Desc.To_Ada (Prop);
+            Val  : constant Val_Desc.Access_Desc.Ada_T :=
+              Val_Desc.To_Ada (Prop);
          begin
             Setter (Self, Val);
             return 0;
@@ -164,7 +165,7 @@ package body Py_Bind.Py_Property is
 
    begin
       Init;
-   end Byref;
+   end From_Py_Value;
 
    package body Read_Only is
 
@@ -183,7 +184,7 @@ package body Py_Bind.Py_Property is
       end Setter;
 
       package Dummy_Internal
-      is new ByVal (Val_Desc, Property_Name, Getter, Setter);
+      is new From_Descriptor (Val_Desc, Property_Name, Getter, Setter);
    end Read_Only;
 
 end Py_Bind.Py_Property;

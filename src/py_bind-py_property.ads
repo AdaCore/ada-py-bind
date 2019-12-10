@@ -24,6 +24,7 @@
 with Py_Bind.Py_Type_Descriptor;
 with Py_Bind.Py_Value;
 with System;
+with System.Aux_DEC; use System.Aux_DEC;
 
 --  Container package to generate properties for a given Python bound type,
 --  represented by ``Self_Val``.
@@ -34,10 +35,11 @@ generic
 package Py_Bind.Py_Property is
 
    --  Bind a property, given a value descriptor, a getter and a setter. Using
-   --  this package, the getter and the setter will take ``self`` by value.
-   --  PLEASE NOTE that this should really be only used for non composite
-   --  values due to Python semantics. Using it for a composite type will
-   --  make chained assignment non functional.
+   --  this package, the getter and the setter will take direct instances of
+   --  the type descriptor.
+   --
+   --  WARNING: If the type descriptor describes a composite type *value*, then
+   --  this should not be used, but ``From_Py_Value`` should be used.
 
    generic
       with package Val_Desc is new Py_Bind.Py_Type_Descriptor (<>);
@@ -48,9 +50,27 @@ package Py_Bind.Py_Property is
 
       with function Getter
         (Self : Self_Val.Val_Desc.Ada_T) return Val_Desc.Ada_Type;
-      with procedure Setter (Self : in out Self_Val.Val_Desc.Ada_T;
-                             Val  : Val_Desc.Ada_Type);
-   package Byval is
+      --  Getter for the property
+
+      with procedure Setter
+        (Self : in out Self_Val.Val_Desc.Ada_T; Val : Val_Desc.Ada_Type);
+      --  Setter for the property
+
+      Override_Composite : Boolean := False;
+      --  Whether to override the error that will be raised when you pass a
+      --  composite type in Val_Desc.
+   package From_Descriptor is private
+
+      pragma Compile_Time_Error
+        (not Override_Composite
+         and then
+           (Val_Desc.Ada_T'Type_Class
+            in Type_Class_Record | Type_Class_Array | Type_Class_Task),
+         "T has to be a non-composite type. Use From_Py_Value "
+          & "or set Override_Composite");
+      --  Check that the type passed as parameter is an enum. Emit a compile
+      --  error if not.
+
       function Raw_Getter
         (Obj : PyObject; Dummy : System.Address) return PyObject
         with Convention => C;
@@ -60,28 +80,35 @@ package Py_Bind.Py_Property is
          Prop    : PyObject;
          Dummy   : System.Address) return Integer
         with Convention => C;
-   end Byval;
+   end From_Descriptor;
 
-   --  Bind a property, given a value descriptor, a getter and a setter. Using
-   --  this package, the getter and the setter will take ``self`` by reference
-   --  (access type). Technically only the setter really needs this, but for
-   --  consistency, it applies to both getter and setter.
+   --  Bind a property, given a ``Py_Value``, a getter and a setter. By
+   --  default, if you instantiated a ``Py_Value`` package to bind some
+   --  Ada data structure, this should be the go-to option, because it
+   --  will correctly handle by-reference semantics for you.
+   --
+   --  NOTE: The getter and setter will use access types, both for the receiver
+   --  value and for the property value. This is necessary in order to properly
+   --  implement by-reference semantics. If you don't need that, consider using
+   --  ``From_Descriptor``.
 
    generic
-      with package Val_Desc is new Py_Bind.Py_Type_Descriptor (<>);
+      with package Val_Desc is new Py_Bind.Py_Value (<>);
       --  Type descriptor for the value of the property.
 
       Property_Name : String;
       --  Name of the resulting property.
 
       with function Getter
-        (Self : Self_Val.Access_Desc.Ada_T) return Val_Desc.Ada_Type;
+        (Self : Self_Val.Access_Desc.Ada_T) return Val_Desc.Access_Desc.Ada_T;
       --  Getter function for the property.
 
-      with procedure Setter (Self : Self_Val.Access_Desc.Ada_T;
-                             Val  : Val_Desc.Ada_Type);
+      with procedure Setter
+        (Self : Self_Val.Access_Desc.Ada_T;
+         Val  : Val_Desc.Access_Desc.Ada_T);
       --  Setter procedure for the property.
-   package Byref is
+
+   package From_Py_Value is private
       function Raw_Getter
         (Obj : PyObject; Dummy : System.Address) return PyObject
         with Convention => C;
@@ -91,7 +118,7 @@ package Py_Bind.Py_Property is
          Prop    : PyObject;
          Dummy   : System.Address) return Integer
         with Convention => C;
-   end Byref;
+   end From_Py_Value;
 
    --  Bind a read-only property, given a value descriptor and a getter. The
    --  getter passes ``self`` by value.
