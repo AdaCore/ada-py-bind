@@ -31,9 +31,9 @@ package Demo is
    package Py_Point is new Py_Value (Point, Module, "Point");
    package Py_Point_Prop is new Py_Property (Py_Point);
 
-   package Py_Point_X_Prop is new Py_Point_Prop.Byval
+   package Py_Point_X_Prop is new Py_Point_Prop.From_Descriptor
      (Int_Type, "x", Get_X, Set_X);
-   package Py_Shape_Y_Prop is new Py_Point_Prop.Byval
+   package Py_Shape_Y_Prop is new Py_Point_Prop.From_Descriptor
      (Int_Type, "y", Get_Y, Set_Y);
 
    procedure Initialize_Module;

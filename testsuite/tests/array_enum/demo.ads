@@ -37,8 +37,8 @@ package Demo is
    procedure Set_Coords
      (P : Py_Point.Val_Access; Val : Py_Coords.Py_Array_Value.Val_Access);
 
-   package Py_Point_Coords_Prop is new Py_Point_Prop.Byref
-     (Py_Coords.Py_Array_Value.Access_Desc, "coords", Get_Coords, Set_Coords);
+   package Py_Point_Coords_Prop is new Py_Point_Prop.From_Py_Value
+     (Py_Coords.Py_Array_Value, "coords", Get_Coords, Set_Coords);
 
    procedure Initialize_Module;
    pragma Export (C, Initialize_Module, "initgen");

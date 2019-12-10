@@ -40,23 +40,23 @@ package Demo is
    package Py_Point is new Py_Value (Point, Module, "Point");
    package Py_Point_Prop is new Py_Property (Py_Point);
 
-   package Py_Point_X_Prop is new Py_Point_Prop.Byval
+   package Py_Point_X_Prop is new Py_Point_Prop.From_Descriptor
      (Int_Type, "x", Get_X, Set_X);
-   package Py_Shape_Y_Prop is new Py_Point_Prop.Byval
+   package Py_Shape_Y_Prop is new Py_Point_Prop.From_Descriptor
      (Int_Type, "y", Get_Y, Set_Y);
 
    --  Bind shape
    package Py_Shape is new Py_Value (Shape, Module, "Shape");
    package Py_Shape_Prop is new Py_Property (Py_Shape);
 
-   package Py_Shape_Id_Prop is new Py_Shape_Prop.Byval
-     (String_Type, "id", Get_Id, Set_Id);
+   package Py_Shape_Id_Prop is new Py_Shape_Prop.From_Descriptor
+     (String_Type, "id", Get_Id, Set_Id, Override_Composite => True);
 
    function Get_Position (S : Py_Shape.Val_Access) return Py_Point.Val_Access;
    procedure Set_Position
      (S : Py_Shape.Val_Access; Point : Py_Point.Val_Access);
-   package Py_Shape_Position_Prop is new Py_Shape_Prop.Byref
-     (Py_Point.Access_Desc, "position", Get_Position, Set_Position);
+   package Py_Shape_Position_Prop is new Py_Shape_Prop.From_Py_Value
+     (Py_Point, "position", Get_Position, Set_Position);
 
    function Dummy_Method (Args : Py_Args) return PyObject;
    function Py_Translate (Args : Py_Args) return PyObject;
