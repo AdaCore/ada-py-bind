@@ -203,4 +203,22 @@ package body Py_Bind.Types is
       return Convert (Typ);
    end To_PyObject;
 
+   ------------
+   -- To_Ada --
+   ------------
+
+   function To_Ada (Self : PyObject) return Unbounded_String is
+   begin
+      return To_Unbounded_String (String'(To_Ada (Self)));
+   end To_Ada;
+
+   ---------------
+   -- To_Python --
+   ---------------
+
+   function To_Python (Self : Unbounded_String) return Py_Object'Class is
+   begin
+      return To_Python (To_String (Self));
+   end To_Python;
+
 end Py_Bind.Types;

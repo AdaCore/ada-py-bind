@@ -1,10 +1,11 @@
-with Py_Bind.Py_Value;
-with Py_Bind.Py_Functions;
 with Py_Bind.Py_Type_Descriptor;
 with Py_Bind.Py_Module;
+with Py_Bind.Py_Functions;
+with Py_Bind.Py_Value;
 
 --  This package is a helper that will allow clients to create bindings to
---  definite bounded arrays.
+--  definite bounded arrays, using a ``Py_Type_Descriptor`` as the way to bind
+--  the array's element and index.
 --
 --  NOTE: The bounds of the array will be *exactly* the same as in Ada. If they
 --  start at ``1`` in Ada, they'll start at 1 in Python. If the indexing type
@@ -34,14 +35,16 @@ generic
 
    Name : String;
    --  Name of the python type.
-package Py_Bind.Bounded_Array is
-   package Py_Array_Value is new Py_Bind.Py_Value (Array_Type, Module, Name);
+package Py_Bind.Desc_Array is
+
+   package Py_Container
+   is new Py_Bind.Py_Value (Array_Type, Module, Name);
 
 private
 
    --  We use the __getitem__/__setitem__ special
-   --  methods to allow indexing of the bound type (see
-   --  https://docs.python.org/2/reference/datamodel.html#object.__getitem__).
+   --  methods to allow indexing of the bound type - see
+   --  https://docs.python.org/2/reference/datamodel.html#object.__getitem__
    --
    --  TODO: Implement __iter__/__next__ to allow iterating on arrays.
 
@@ -51,19 +54,19 @@ private
    package Get_Item_Method is new Py_Bind.Py_Functions.Raw_Method
      ("__getitem__",
       Get_Item,
-      Py_Array_Value,
+      Py_Container,
       Create_Profile
-        ((Arg_Spec ("self", Py_Array_Value.Py_Type),
+        ((Arg_Spec ("self", Py_Container.Py_Type),
           Arg_Spec ("key", Index_Desc.P_Py_Type)),
          Element_Desc.P_Py_Type));
 
    package Set_Item_Method is new Py_Bind.Py_Functions.Raw_Method
      ("__setitem__",
       Set_Item,
-      Py_Array_Value,
+      Py_Container,
       Create_Profile
-        ((Arg_Spec ("self", Py_Array_Value.Py_Type),
+        ((Arg_Spec ("self", Py_Container.Py_Type),
           Arg_Spec ("key", Index_Desc.P_Py_Type),
           Arg_Spec ("value", Element_Desc.P_Py_Type))));
 
-end Py_Bind.Bounded_Array;
+end Py_Bind.Desc_Array;

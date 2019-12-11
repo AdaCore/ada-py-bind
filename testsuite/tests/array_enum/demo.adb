@@ -13,7 +13,7 @@ package body Demo is
    ----------------
 
    function Get_Coords
-     (P : Py_Point.Val_Access) return Py_Coords.Py_Array_Value.Val_Access
+     (P : Py_Point.Val_Access) return Py_Coords.Py_Container.Val_Access
    is
    begin
       return P.Coords'Unrestricted_Access;
@@ -24,7 +24,7 @@ package body Demo is
    ----------------
 
    procedure Set_Coords
-     (P : Py_Point.Val_Access; Val : Py_Coords.Py_Array_Value.Val_Access) is
+     (P : Py_Point.Val_Access; Val : Py_Coords.Py_Container.Val_Access) is
    begin
       P.Coords := Val.all;
    end Set_Coords;
