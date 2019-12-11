@@ -30,4 +30,26 @@ package body Demo is
       P.Coords := Val.all;
    end Set_Coords;
 
+   ----------------
+   -- Get_Points --
+   ----------------
+
+   function Get_Points
+     (P : Py_Plot.Val_Access) return Py_Point_Array.Py_Container.Val_Access
+   is
+   begin
+      return P.Points'Unrestricted_Access;
+   end Get_Points;
+
+   ----------------
+   -- Set_Points --
+   ----------------
+
+   procedure Set_Points
+     (P : Py_Plot.Val_Access; Val : Py_Point_Array.Py_Container.Val_Access)
+   is
+   begin
+      P.Points := Val.all;
+   end Set_Points;
+
 end Demo;

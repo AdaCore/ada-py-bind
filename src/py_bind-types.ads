@@ -66,6 +66,7 @@ package Py_Bind.Types is
 
    function To_Ada (Dummy : PyObject) return Unit_Type;
    function To_Ada (Self : PyObject) return String;
+   function To_Ada (Self : PyObject) return Unbounded_String;
    function To_Ada (Self : PyObject) return Integer;
    function To_Ada (Self : PyObject) return Float;
 
@@ -78,6 +79,7 @@ package Py_Bind.Types is
 
    function To_Python (Dummy : Unit_Type) return Py_Object'Class;
    function To_Python (Self : String) return Py_Object'Class;
+   function To_Python (Self : Unbounded_String) return Py_Object'Class;
    function To_Python (Self : Integer) return Py_Object'Class;
    function To_Python (Self : Float) return Py_Object'Class;
 
@@ -93,6 +95,9 @@ package Py_Bind.Types is
      (Unit_Type, Py_No_Type);
 
    package String_Type is new Py_Bind.Py_Type_Descriptor
+     (String, Py_String_Type);
+
+   package Unbounded_String_Type is new Py_Bind.Py_Type_Descriptor
      (String, Py_String_Type);
 
    package Int_Type is new Py_Bind.Py_Type_Descriptor (Integer, Py_Int_Type);
