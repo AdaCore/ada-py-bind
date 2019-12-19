@@ -21,7 +21,6 @@ generic
    --  Index descriptor for the index type.
 
    type Element_Type is private;
-   --  Element type for the array.
 
    with package Element_Val
      is new Py_Value (Element_Type, others => <>);
@@ -36,6 +35,8 @@ generic
    Name : String;
    --  Name of the python type.
 package Py_Bind.Py_Val_Array is
+
+   function Create return Array_Type;
 
    package Py_Container
    is new Py_Bind.Py_Value (Array_Type, Module, Name);

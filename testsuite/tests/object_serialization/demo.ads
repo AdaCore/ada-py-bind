@@ -43,6 +43,8 @@ package Demo is
    --  Point --
    ------------
 
+   function Create return Point is (others => <>);
+
    package Py_Point is new Py_Value (Point, Module, "Point");
    package Py_Point_Prop is new Py_Property (Py_Point);
 
@@ -54,6 +56,8 @@ package Demo is
    ------------
    --  Shape --
    ------------
+
+   function Create return Shape is (others => <>);
 
    package Py_Shape is new Py_Value (Shape, Module, "Shape");
    package Py_Shape_Prop is new Py_Property (Py_Shape);

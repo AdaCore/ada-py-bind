@@ -31,6 +31,8 @@ package Demo is
    -- Python bindings --
    ---------------------
 
+   function Create return Point is (others => <>);
+
    package Module is new Py_Module ("gen");
 
    --  Bind point
@@ -56,6 +58,8 @@ package Demo is
 
    package Py_Point_Coords_Prop is new Py_Point_Prop.From_Py_Value
      (Py_Coords.Py_Container, "coords", Get_Coords, Set_Coords);
+
+   function Create return Plot is (others => <>);
 
    package Py_Plot is new Py_Value (Plot, Module, "Plot");
 

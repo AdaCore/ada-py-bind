@@ -37,6 +37,8 @@ generic
    --  Name of the python type.
 package Py_Bind.Desc_Array is
 
+   function Create return Array_Type;
+
    package Py_Container
    is new Py_Bind.Py_Value (Array_Type, Module, Name);
 

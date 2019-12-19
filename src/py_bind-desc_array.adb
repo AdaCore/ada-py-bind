@@ -40,4 +40,14 @@ package body Py_Bind.Desc_Array is
         (Self (Key)).Py_Data;
    end Get_Item;
 
+   -------------
+   -- Create --
+   -------------
+
+   function Create return Array_Type is
+      Ret : constant Array_Type := (others => <>);
+   begin
+      return Ret;
+   end Create;
+
 end Py_Bind.Desc_Array;

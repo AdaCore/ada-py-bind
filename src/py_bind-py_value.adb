@@ -235,7 +235,11 @@ package body Py_Bind.Py_Value is
          if Self /= null then
             R := To_Ada (Self);
             if R = null then
-               R := new Val;
+               declare
+                  V : constant Val := Create;
+               begin
+                  R := new Val'(V);
+               end;
                Set_UD (R, Self);
             end if;
          end if;

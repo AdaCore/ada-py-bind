@@ -41,6 +41,9 @@ package Demo is
    -- Python bindings --
    ---------------------
 
+   function Create return Point is (others => <>);
+   function Create return Shape is (others => <>);
+
    package Module is new Py_Module ("gen");
 
    --  Bind point

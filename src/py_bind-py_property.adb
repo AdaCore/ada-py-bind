@@ -107,8 +107,9 @@ package body Py_Bind.Py_Property is
          declare
             Self : constant Self_Val.Access_Desc.Ada_T :=
               Self_Val.Access_Desc.P_To_Ada (Obj);
+            Acc : constant Val_Desc.Access_Desc.Ada_T := Getter (Self);
             P    : constant Py_Object'Class :=
-              Val_Desc.To_Python (Getter (Self));
+              Val_Desc.To_Python (Acc);
          begin
             return P.Py_Data;
          end;

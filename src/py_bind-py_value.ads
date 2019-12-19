@@ -25,13 +25,17 @@ with Py_Bind.Py_Type_Descriptor;
 with Py_Bind.Py_Module;
 
 generic
-   type Val is private;
+   type Val (<>) is private;
 
    with package Module is new Py_Bind.Py_Module (<>);
 
    Name : String;
 
    with procedure Destroy (Self : in out Val) is null;
+
+   with function Create return Val is <>;
+   --  Constructor function for Val. Returns an initialized version, suitable
+   --  to initialize the memory of objects created from Python.
 
 package Py_Bind.Py_Value is
 
@@ -44,7 +48,13 @@ package Py_Bind.Py_Value is
    overriding procedure Destroy (Self : in out T);
 
    function To_Python (Self : Val) return Py_Object'Class;
+   --  Return a new python object wrapping ``Self``. Note that an allocated
+   --  copy of ``Self`` will be wrapped.
+
    function To_Python (Self : Val_Access) return Py_Object'Class;
+   --  Return a new python object wrapping ``Self``. Note that Self will be
+   --  directly wrapped, so the users needs to make sure that the life-time
+   --  of Self is respected from the Python side.
 
    function To_Ada (Self : PyObject) return Val_Access;
    function To_Ada (Self : PyObject) return Val;
