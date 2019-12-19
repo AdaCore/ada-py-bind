@@ -38,4 +38,15 @@ package body Py_Bind.Py_Val_Array is
         (Self (Key)'Unrestricted_Access).Py_Data;
    end Get_Item;
 
+   -------------
+   -- Create --
+   -------------
+
+   function Create return Array_Type
+   is
+      Arr : constant Array_Type := (others => <>);
+   begin
+      return Arr;
+   end Create;
+
 end Py_Bind.Py_Val_Array;
